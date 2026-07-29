@@ -129,7 +129,7 @@ function Documents() {
             {FOLDERS.map((f) => {
               const count = DOCUMENTS.filter((d) => d.folder === f).length;
               return (
-                <button key={f} onClick={() => setSelected(f)}
+                <button key={f} onClick={() => { setSelected(f); setUploadFolder(f); }}
                         className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-secondary ${selected === f ? "bg-secondary font-medium" : ""}`}>
                   <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   <span className="truncate flex-1">{f}</span>
