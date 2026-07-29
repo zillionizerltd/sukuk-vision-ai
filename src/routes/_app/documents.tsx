@@ -91,6 +91,18 @@ function Documents() {
         subtitle={`${DOCUMENTS.length} documents · AI-analysed on upload · Version-controlled · Watermarked downloads`}
         actions={
           <>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="hidden sm:inline">Upload to</span>
+              <select
+                value={uploadFolder}
+                onChange={(e) => setUploadFolder(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                {FOLDERS.map((f) => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </label>
             <Button variant="secondary" size="sm"><Filter className="h-3.5 w-3.5" />Filter</Button>
             <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadMut.isPending}>
               {uploadMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
@@ -98,6 +110,7 @@ function Documents() {
             </Button>
           </>
         }
+
       />
 
       {msg && <div className="mb-3 text-xs rounded-md bg-secondary px-3 py-2">{msg}</div>}
