@@ -37,6 +37,7 @@ function KPI({ icon: Icon, label, value, tone = "neutral", sub }: { icon: any; l
 }
 
 function Dashboard() {
+  const { data: MILESTONES = [] } = useMilestones();
   return (
     <>
       <PageHeader
