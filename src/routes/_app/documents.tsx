@@ -6,7 +6,7 @@ import { FOLDERS } from "@/lib/demo-data";
 import { useDocuments } from "@/hooks/use-modules";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2 } from "lucide-react";
+import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({ meta: [{ title: "Data Room · Documents · Agrofeed Sukuk" }, { name: "description", content: "Secure document repository with AI analysis." }] }),
