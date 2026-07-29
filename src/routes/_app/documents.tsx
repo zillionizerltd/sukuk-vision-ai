@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_app/documents")({
 function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const { data: DOCUMENTS = [] } = useDocuments();
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
 
   return (
