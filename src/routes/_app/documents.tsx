@@ -128,7 +128,17 @@ function Documents() {
 
       />
 
-      {msg && <div className="mb-3 text-xs rounded-md bg-secondary px-3 py-2">{msg}</div>}
+      {msg && (
+        <div
+          className={`mb-3 text-xs rounded-md px-3 py-2 whitespace-pre-wrap break-words ${
+            msg === "Upload complete"
+              ? "bg-secondary"
+              : "bg-destructive/10 text-destructive border border-destructive/30"
+          }`}
+        >
+          {msg}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
         <Card className="max-h-[70vh] overflow-y-auto">
