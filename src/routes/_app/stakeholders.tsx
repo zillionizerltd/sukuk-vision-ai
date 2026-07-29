@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/stakeholders")({
 });
 
 function Stakeholders() {
+  const { data: STAKEHOLDERS = [] } = useStakeholders();
   return (
     <>
       <PageHeader title="Stakeholder Portal" subtitle="Organisation-specific views for Agrofeed, Tesserant, Al Huda CIBE, Sharia Board & External Legal" />
