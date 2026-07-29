@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { RISKS } from "@/lib/demo-data";
@@ -36,10 +37,10 @@ function Risks() {
           <div></div>
           {LEVELS.map((l) => <div key={l} className="text-center font-medium text-muted-foreground">{l} impact</div>)}
           {[...LEVELS].reverse().map((prob) => (
-            <>
-              <div key={`l-${prob}`} className="flex items-center justify-end pr-2 font-medium text-muted-foreground">{prob} prob</div>
+            <Fragment key={prob}>
+              <div className="flex items-center justify-end pr-2 font-medium text-muted-foreground">{prob} prob</div>
               {LEVELS.map((impact) => <div key={`${prob}-${impact}`}>{cell(prob, impact)}</div>)}
-            </>
+            </Fragment>
           ))}
         </div>
       </Card>
