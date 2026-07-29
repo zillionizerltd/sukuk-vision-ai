@@ -1,13 +1,32 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
+const AGROFEED_ONLY = [
+  "/dashboard", "/milestones", "/tasks", "/structuring", "/compliance",
+  "/risks", "/financials", "/reports", "/ai-advisor", "/stakeholders", "/audit-trail",
+];
+
 function AppLayout() {
+  const { profile, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading || !profile) return;
+    const isAgrofeed = (profile.org ?? "").toLowerCase() === "agrofeed global";
+    if (!isAgrofeed && AGROFEED_ONLY.some((p) => location.pathname.startsWith(p))) {
+      navigate({ to: "/documents", replace: true });
+    }
+  }, [profile, loading, location.pathname, navigate]);
+
   return (
     <div className="min-h-screen flex bg-secondary/30">
       <Sidebar />
