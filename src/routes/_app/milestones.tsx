@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/milestones")({
 });
 
 function Milestones() {
+  const { data: MILESTONES = [] } = useMilestones();
   const groups = {
     completed: MILESTONES.filter((m) => m.status === "completed"),
     inProgress: MILESTONES.filter((m) => m.status === "in_progress"),
