@@ -118,15 +118,43 @@ function Documents() {
   const uploadingCount = uploads.filter((u) => u.status === "uploading" || u.status === "pending").length;
   const errorCount = uploads.filter((u) => u.status === "error").length;
 
-  const download = async (id: string, name: string) => {
+  const signedUrl = async (id: string): Promise<string | null> => {
     const { data: row } = await supabase.from("documents").select("storage_path").eq("id", id).maybeSingle();
-    if (!row?.storage_path) return setMsg("File missing");
-    const { data, error } = await supabase.storage.from("documents").createSignedUrl(row.storage_path, 60);
-    if (error || !data) return setMsg(error?.message ?? "Cannot sign URL");
-    const a = document.createElement("a");
-    a.href = data.signedUrl;
-    a.download = name;
-    a.click();
+    if (!row?.storage_path) {
+      setMsg("File missing");
+      return null;
+    }
+    const { data, error } = await supabase.storage.from("documents").createSignedUrl(row.storage_path, 300);
+    if (error || !data) {
+      setMsg(error?.message ?? "Cannot sign URL");
+      return null;
+    }
+    return data.signedUrl;
+  };
+
+  const download = async (id: string, name: string) => {
+    const url = await signedUrl(id);
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objUrl;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+    } catch (e) {
+      setMsg(`Download failed: ${(e as Error).message}`);
+    }
+  };
+
+  const preview = async (id: string) => {
+    const url = await signedUrl(id);
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const remove = async (id: string) => {
