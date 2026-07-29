@@ -1,20 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Button, Pill } from "@/components/ui/primitives";
 import { FileText, Download } from "lucide-react";
+import { useReports } from "@/hooks/use-modules";
 
 export const Route = createFileRoute("/_app/reports")({
   head: () => ({ meta: [{ title: "Reports · Agrofeed Sukuk" }, { name: "description", content: "Board and stakeholder reports." }] }),
   component: Reports,
 });
 
-const REPORTS = [
-  "Executive Dashboard Report", "Board Report", "Sukuk Readiness Report", "Project Status Report",
-  "Due Diligence Report", "Compliance Report", "Sharia Compliance Report", "Risk Report",
-  "Financial Analysis Report", "Investor Readiness Report", "Milestone Report", "Document Inventory",
-  "Missing Documents Report", "Audit Trail Report", "Stakeholder Activity Report", "SPV Readiness Report", "ESG Report",
-];
-
 function Reports() {
+  const { data: REPORTS = [] } = useReports();
   return (
     <>
       <PageHeader title="Reports" subtitle="Branded, board-ready reports · PDF · Word · Excel" />
