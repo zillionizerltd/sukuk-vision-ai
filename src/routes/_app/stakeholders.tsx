@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill } from "@/components/ui/primitives";
-import { STAKEHOLDERS } from "@/lib/demo-data";
+import { useStakeholders } from "@/hooks/use-modules";
 import { Building2, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_app/stakeholders")({
