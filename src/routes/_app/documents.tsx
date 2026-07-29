@@ -354,6 +354,9 @@ function Documents() {
                     <td className="px-4 py-3 text-muted-foreground text-xs tabular-nums">{d.updated}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => preview(d.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Preview">
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
                         <button onClick={() => download(d.id, d.name)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Download">
                           <Download className="h-3.5 w-3.5" />
                         </button>
