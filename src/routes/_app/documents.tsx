@@ -163,10 +163,11 @@ function Documents() {
               </select>
             </label>
             <Button variant="secondary" size="sm"><Filter className="h-3.5 w-3.5" />Filter</Button>
-            <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadMut.isPending}>
-              {uploadMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-              Upload documents
+            <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingCount > 0}>
+              {uploadingCount > 0 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              {uploadingCount > 0 ? `Uploading ${uploadingCount}…` : "Upload documents"}
             </Button>
+
           </>
         }
 
