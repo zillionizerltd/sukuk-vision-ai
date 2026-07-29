@@ -17,10 +17,19 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+const ORGS = [
+  "Agrofeed Global",
+  "Tesserant Capital",
+  "Al Huda CIBE",
+  "Sharia Supervisory Board",
+  "External Legal Counsel",
+] as const;
+
 function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [fullName, setFullName] = useState("");
+  const [org, setOrg] = useState<string>(ORGS[0]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +52,7 @@ function LoginPage() {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: { full_name: fullName, org },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -60,6 +69,7 @@ function LoginPage() {
       setBusy(false);
     }
   };
+
 
   const google = async () => {
     setError(null);
