@@ -17,6 +17,7 @@ function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [uploadFolder, setUploadFolder] = useState<string>(FOLDERS[0]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile } = useAuth();
@@ -28,7 +29,8 @@ function Documents() {
   const uploadMut = useMutation({
     mutationFn: async (files: FileList) => {
       if (!user) throw new Error("Not signed in");
-      const folder = selected ?? "/";
+      const folder = uploadFolder || selected || "/";
+
       for (const file of Array.from(files)) {
         const path = `${user.id}/${Date.now()}-${file.name}`;
         const { error: upErr } = await supabase.storage.from("documents").upload(path, file, {
