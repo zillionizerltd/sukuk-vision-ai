@@ -18,6 +18,7 @@ import { Route as AppStakeholdersRouteImport } from './routes/_app/stakeholders'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppRisksRouteImport } from './routes/_app/risks'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppMilestonesRouteImport } from './routes/_app/milestones'
 import { Route as AppFinancialsRouteImport } from './routes/_app/financials'
 import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
@@ -70,6 +71,11 @@ const AppReportsRoute = AppReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMilestonesRoute = AppMilestonesRouteImport.update({
   id: '/milestones',
   path: '/milestones',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AppDocumentsRoute
   '/financials': typeof AppFinancialsRoute
   '/milestones': typeof AppMilestonesRoute
+  '/profile': typeof AppProfileRoute
   '/reports': typeof AppReportsRoute
   '/risks': typeof AppRisksRoute
   '/settings': typeof AppSettingsRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AppDocumentsRoute
   '/financials': typeof AppFinancialsRoute
   '/milestones': typeof AppMilestonesRoute
+  '/profile': typeof AppProfileRoute
   '/reports': typeof AppReportsRoute
   '/risks': typeof AppRisksRoute
   '/settings': typeof AppSettingsRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_app/documents': typeof AppDocumentsRoute
   '/_app/financials': typeof AppFinancialsRoute
   '/_app/milestones': typeof AppMilestonesRoute
+  '/_app/profile': typeof AppProfileRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/risks': typeof AppRisksRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/financials'
     | '/milestones'
+    | '/profile'
     | '/reports'
     | '/risks'
     | '/settings'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/financials'
     | '/milestones'
+    | '/profile'
     | '/reports'
     | '/risks'
     | '/settings'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/_app/documents'
     | '/_app/financials'
     | '/_app/milestones'
+    | '/_app/profile'
     | '/_app/reports'
     | '/_app/risks'
     | '/_app/settings'
@@ -285,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/milestones': {
       id: '/_app/milestones'
       path: '/milestones'
@@ -345,6 +364,7 @@ interface AppRouteChildren {
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppFinancialsRoute: typeof AppFinancialsRoute
   AppMilestonesRoute: typeof AppMilestonesRoute
+  AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
   AppRisksRoute: typeof AppRisksRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -361,6 +381,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocumentsRoute: AppDocumentsRoute,
   AppFinancialsRoute: AppFinancialsRoute,
   AppMilestonesRoute: AppMilestonesRoute,
+  AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
   AppRisksRoute: AppRisksRoute,
   AppSettingsRoute: AppSettingsRoute,
@@ -379,3 +400,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
