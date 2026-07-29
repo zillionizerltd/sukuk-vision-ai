@@ -9,38 +9,233 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTasksRouteImport } from './routes/_app/tasks'
+import { Route as AppStructuringRouteImport } from './routes/_app/structuring'
+import { Route as AppStakeholdersRouteImport } from './routes/_app/stakeholders'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppRisksRouteImport } from './routes/_app/risks'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppMilestonesRouteImport } from './routes/_app/milestones'
+import { Route as AppFinancialsRouteImport } from './routes/_app/financials'
+import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppComplianceRouteImport } from './routes/_app/compliance'
+import { Route as AppAuditTrailRouteImport } from './routes/_app/audit-trail'
+import { Route as AppAiAdvisorRouteImport } from './routes/_app/ai-advisor'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStructuringRoute = AppStructuringRouteImport.update({
+  id: '/structuring',
+  path: '/structuring',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStakeholdersRoute = AppStakeholdersRouteImport.update({
+  id: '/stakeholders',
+  path: '/stakeholders',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRisksRoute = AppRisksRouteImport.update({
+  id: '/risks',
+  path: '/risks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMilestonesRoute = AppMilestonesRouteImport.update({
+  id: '/milestones',
+  path: '/milestones',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinancialsRoute = AppFinancialsRouteImport.update({
+  id: '/financials',
+  path: '/financials',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComplianceRoute = AppComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditTrailRoute = AppAuditTrailRouteImport.update({
+  id: '/audit-trail',
+  path: '/audit-trail',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiAdvisorRoute = AppAiAdvisorRouteImport.update({
+  id: '/ai-advisor',
+  path: '/ai-advisor',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/ai-advisor': typeof AppAiAdvisorRoute
+  '/audit-trail': typeof AppAuditTrailRoute
+  '/compliance': typeof AppComplianceRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/documents': typeof AppDocumentsRoute
+  '/financials': typeof AppFinancialsRoute
+  '/milestones': typeof AppMilestonesRoute
+  '/reports': typeof AppReportsRoute
+  '/risks': typeof AppRisksRoute
+  '/settings': typeof AppSettingsRoute
+  '/stakeholders': typeof AppStakeholdersRoute
+  '/structuring': typeof AppStructuringRoute
+  '/tasks': typeof AppTasksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/ai-advisor': typeof AppAiAdvisorRoute
+  '/audit-trail': typeof AppAuditTrailRoute
+  '/compliance': typeof AppComplianceRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/documents': typeof AppDocumentsRoute
+  '/financials': typeof AppFinancialsRoute
+  '/milestones': typeof AppMilestonesRoute
+  '/reports': typeof AppReportsRoute
+  '/risks': typeof AppRisksRoute
+  '/settings': typeof AppSettingsRoute
+  '/stakeholders': typeof AppStakeholdersRoute
+  '/structuring': typeof AppStructuringRoute
+  '/tasks': typeof AppTasksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_app/ai-advisor': typeof AppAiAdvisorRoute
+  '/_app/audit-trail': typeof AppAuditTrailRoute
+  '/_app/compliance': typeof AppComplianceRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/documents': typeof AppDocumentsRoute
+  '/_app/financials': typeof AppFinancialsRoute
+  '/_app/milestones': typeof AppMilestonesRoute
+  '/_app/reports': typeof AppReportsRoute
+  '/_app/risks': typeof AppRisksRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/stakeholders': typeof AppStakeholdersRoute
+  '/_app/structuring': typeof AppStructuringRoute
+  '/_app/tasks': typeof AppTasksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/ai-advisor'
+    | '/audit-trail'
+    | '/compliance'
+    | '/dashboard'
+    | '/documents'
+    | '/financials'
+    | '/milestones'
+    | '/reports'
+    | '/risks'
+    | '/settings'
+    | '/stakeholders'
+    | '/structuring'
+    | '/tasks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/ai-advisor'
+    | '/audit-trail'
+    | '/compliance'
+    | '/dashboard'
+    | '/documents'
+    | '/financials'
+    | '/milestones'
+    | '/reports'
+    | '/risks'
+    | '/settings'
+    | '/stakeholders'
+    | '/structuring'
+    | '/tasks'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/login'
+    | '/_app/ai-advisor'
+    | '/_app/audit-trail'
+    | '/_app/compliance'
+    | '/_app/dashboard'
+    | '/_app/documents'
+    | '/_app/financials'
+    | '/_app/milestones'
+    | '/_app/reports'
+    | '/_app/risks'
+    | '/_app/settings'
+    | '/_app/stakeholders'
+    | '/_app/structuring'
+    | '/_app/tasks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +243,139 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/tasks': {
+      id: '/_app/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/structuring': {
+      id: '/_app/structuring'
+      path: '/structuring'
+      fullPath: '/structuring'
+      preLoaderRoute: typeof AppStructuringRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/stakeholders': {
+      id: '/_app/stakeholders'
+      path: '/stakeholders'
+      fullPath: '/stakeholders'
+      preLoaderRoute: typeof AppStakeholdersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/risks': {
+      id: '/_app/risks'
+      path: '/risks'
+      fullPath: '/risks'
+      preLoaderRoute: typeof AppRisksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/milestones': {
+      id: '/_app/milestones'
+      path: '/milestones'
+      fullPath: '/milestones'
+      preLoaderRoute: typeof AppMilestonesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/financials': {
+      id: '/_app/financials'
+      path: '/financials'
+      fullPath: '/financials'
+      preLoaderRoute: typeof AppFinancialsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/documents': {
+      id: '/_app/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/compliance': {
+      id: '/_app/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof AppComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/audit-trail': {
+      id: '/_app/audit-trail'
+      path: '/audit-trail'
+      fullPath: '/audit-trail'
+      preLoaderRoute: typeof AppAuditTrailRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ai-advisor': {
+      id: '/_app/ai-advisor'
+      path: '/ai-advisor'
+      fullPath: '/ai-advisor'
+      preLoaderRoute: typeof AppAiAdvisorRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAiAdvisorRoute: typeof AppAiAdvisorRoute
+  AppAuditTrailRoute: typeof AppAuditTrailRoute
+  AppComplianceRoute: typeof AppComplianceRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
+  AppFinancialsRoute: typeof AppFinancialsRoute
+  AppMilestonesRoute: typeof AppMilestonesRoute
+  AppReportsRoute: typeof AppReportsRoute
+  AppRisksRoute: typeof AppRisksRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppStakeholdersRoute: typeof AppStakeholdersRoute
+  AppStructuringRoute: typeof AppStructuringRoute
+  AppTasksRoute: typeof AppTasksRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAiAdvisorRoute: AppAiAdvisorRoute,
+  AppAuditTrailRoute: AppAuditTrailRoute,
+  AppComplianceRoute: AppComplianceRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
+  AppFinancialsRoute: AppFinancialsRoute,
+  AppMilestonesRoute: AppMilestonesRoute,
+  AppReportsRoute: AppReportsRoute,
+  AppRisksRoute: AppRisksRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppStakeholdersRoute: AppStakeholdersRoute,
+  AppStructuringRoute: AppStructuringRoute,
+  AppTasksRoute: AppTasksRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
