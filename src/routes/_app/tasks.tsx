@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/tasks")({
 });
 
 function Tasks() {
+  const { data: TASKS = [] } = useTasks();
   const cols = [
     { key: "not_started", label: "Not started", tone: "neutral" as const },
     { key: "in_progress", label: "In progress", tone: "warning" as const },
