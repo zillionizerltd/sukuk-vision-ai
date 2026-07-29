@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
-import { DOCUMENTS, FOLDERS } from "@/lib/demo-data";
+import { FOLDERS } from "@/lib/demo-data";
+import { useDocuments } from "@/hooks/use-modules";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter } from "lucide-react";
 
 export const Route = createFileRoute("/_app/documents")({
