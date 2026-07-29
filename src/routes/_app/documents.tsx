@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { FOLDERS } from "@/lib/demo-data";
 import { useDocuments } from "@/hooks/use-modules";
@@ -13,11 +13,22 @@ export const Route = createFileRoute("/_app/documents")({
   component: Documents,
 });
 
+type UploadItem = {
+  id: string;
+  file: File;
+  folder: string;
+  status: "pending" | "uploading" | "success" | "error";
+  progress: number; // 0-100
+  error?: string;
+  step?: "storage" | "db";
+};
+
 function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [uploadFolder, setUploadFolder] = useState<string>(FOLDERS[0]);
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile } = useAuth();
@@ -26,54 +37,86 @@ function Documents() {
 
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
 
-  const uploadMut = useMutation({
-    mutationFn: async (files: FileList) => {
-      if (!user) throw new Error("[auth] Not signed in");
-      const folder = uploadFolder || selected || "/";
+  const updateUpload = (id: string, patch: Partial<UploadItem>) =>
+    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
 
-      for (const file of Array.from(files)) {
-        const path = `${user.id}/${Date.now()}-${file.name}`;
-        const { error: upErr } = await supabase.storage.from("documents").upload(path, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type || undefined,
-        });
-        if (upErr) {
-          const status = (upErr as { statusCode?: string | number }).statusCode;
-          throw new Error(
-            `[storage.upload] ${upErr.message}${status ? ` (status ${status})` : ""} — bucket=documents path=${path}`,
-          );
-        }
-        const { error: insErr } = await supabase.from("documents").insert({
-          name: file.name,
-          folder,
-          size_bytes: file.size,
-          mime_type: file.type || null,
-          storage_path: path,
-          confidentiality: "confidential",
-          status: "draft",
-          uploaded_by: user.id,
-        });
-        if (insErr) {
-          throw new Error(
-            `[db.documents.insert] ${insErr.message}` +
-              (insErr.code ? ` (code ${insErr.code})` : "") +
-              (insErr.details ? ` — ${insErr.details}` : "") +
-              (insErr.hint ? ` — hint: ${insErr.hint}` : ""),
-          );
-        }
-      }
-    },
-    onSuccess: () => {
-      setMsg("Upload complete");
-      qc.invalidateQueries({ queryKey: ["documents"] });
-      setTimeout(() => setMsg(null), 2500);
-    },
-    onError: (e: Error) => {
-      console.error("[documents upload]", e);
-      setMsg(e.message || String(e));
-    },
-  });
+  const runUpload = async (item: UploadItem) => {
+    if (!user) {
+      updateUpload(item.id, { status: "error", error: "[auth] Not signed in", progress: 0 });
+      return;
+    }
+    updateUpload(item.id, { status: "uploading", progress: 10, step: "storage", error: undefined });
+    const path = `${user.id}/${Date.now()}-${item.file.name}`;
+    const { error: upErr } = await supabase.storage.from("documents").upload(path, item.file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: item.file.type || undefined,
+    });
+    if (upErr) {
+      const status = (upErr as { statusCode?: string | number }).statusCode;
+      updateUpload(item.id, {
+        status: "error",
+        step: "storage",
+        error: `[storage.upload] ${upErr.message}${status ? ` (status ${status})` : ""} — bucket=documents path=${path}`,
+        progress: 0,
+      });
+      return;
+    }
+    updateUpload(item.id, { progress: 70, step: "db" });
+    const { error: insErr } = await supabase.from("documents").insert({
+      name: item.file.name,
+      folder: item.folder,
+      size_bytes: item.file.size,
+      mime_type: item.file.type || null,
+      storage_path: path,
+      confidentiality: "confidential",
+      status: "draft",
+      uploaded_by: user.id,
+    });
+    if (insErr) {
+      // Cleanup orphan storage file
+      await supabase.storage.from("documents").remove([path]).catch(() => {});
+      updateUpload(item.id, {
+        status: "error",
+        step: "db",
+        error:
+          `[db.documents.insert] ${insErr.message}` +
+          (insErr.code ? ` (code ${insErr.code})` : "") +
+          (insErr.details ? ` — ${insErr.details}` : "") +
+          (insErr.hint ? ` — hint: ${insErr.hint}` : ""),
+        progress: 0,
+      });
+      return;
+    }
+    updateUpload(item.id, { status: "success", progress: 100, error: undefined });
+    qc.invalidateQueries({ queryKey: ["documents"] });
+  };
+
+  const startFiles = (files: FileList) => {
+    const folder = uploadFolder || selected || "/";
+    const items: UploadItem[] = Array.from(files).map((file) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name}`,
+      file,
+      folder,
+      status: "pending",
+      progress: 0,
+    }));
+    setUploads((prev) => [...items, ...prev]);
+    items.forEach((it) => void runUpload(it));
+  };
+
+  const retryUpload = (id: string) => {
+    const item = uploads.find((u) => u.id === id);
+    if (item) void runUpload(item);
+  };
+
+  const dismissUpload = (id: string) => setUploads((prev) => prev.filter((u) => u.id !== id));
+
+  const clearFinished = () =>
+    setUploads((prev) => prev.filter((u) => u.status !== "success" && u.status !== "error"));
+
+  const uploadingCount = uploads.filter((u) => u.status === "uploading" || u.status === "pending").length;
+  const errorCount = uploads.filter((u) => u.status === "error").length;
 
   const download = async (id: string, name: string) => {
     const { data: row } = await supabase.from("documents").select("storage_path").eq("id", id).maybeSingle();
@@ -94,9 +137,10 @@ function Documents() {
   };
 
   const onFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length) uploadMut.mutate(e.target.files);
+    if (e.target.files && e.target.files.length) startFiles(e.target.files);
     e.target.value = "";
   };
+
 
   return (
     <>
@@ -119,10 +163,11 @@ function Documents() {
               </select>
             </label>
             <Button variant="secondary" size="sm"><Filter className="h-3.5 w-3.5" />Filter</Button>
-            <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadMut.isPending}>
-              {uploadMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-              Upload documents
+            <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingCount > 0}>
+              {uploadingCount > 0 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              {uploadingCount > 0 ? `Uploading ${uploadingCount}…` : "Upload documents"}
             </Button>
+
           </>
         }
 
@@ -139,6 +184,77 @@ function Documents() {
           {msg}
         </div>
       )}
+
+      {uploads.length > 0 && (
+        <Card className="mb-4 !p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-semibold">
+              Uploads
+              {uploadingCount > 0 && <span className="ml-2 text-muted-foreground font-normal">{uploadingCount} in progress</span>}
+              {errorCount > 0 && <span className="ml-2 text-destructive font-normal">{errorCount} failed</span>}
+            </div>
+            {uploads.some((u) => u.status === "success" || u.status === "error") && (
+              <button onClick={clearFinished} className="text-[11px] text-muted-foreground hover:text-foreground">
+                Clear finished
+              </button>
+            )}
+          </div>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {uploads.map((u) => (
+              <div key={u.id} className="rounded-md border bg-background px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <File className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate">{u.file.name}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {u.folder} · {(u.file.size / 1024).toFixed(0)} KB
+                    </div>
+                  </div>
+                  <Pill
+                    tone={
+                      u.status === "success" ? "success" : u.status === "error" ? "danger" : u.status === "uploading" ? "info" : "warning"
+                    }
+                  >
+                    {u.status === "uploading" ? (u.step === "db" ? "saving…" : "uploading…") : u.status}
+                  </Pill>
+                  {u.status === "error" && (
+                    <button
+                      onClick={() => retryUpload(u.id)}
+                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] hover:bg-secondary"
+                      title="Retry"
+                    >
+                      <Loader2 className="h-3 w-3" /> Retry
+                    </button>
+                  )}
+                  {(u.status === "success" || u.status === "error") && (
+                    <button
+                      onClick={() => dismissUpload(u.id)}
+                      className="inline-flex items-center rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary"
+                      title="Dismiss"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {(u.status === "uploading" || u.status === "pending") && (
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${u.progress}%` }}
+                    />
+                  </div>
+                )}
+                {u.status === "error" && u.error && (
+                  <div className="mt-2 text-[11px] text-destructive whitespace-pre-wrap break-words">
+                    {u.error}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
         <Card className="max-h-[70vh] overflow-y-auto">
