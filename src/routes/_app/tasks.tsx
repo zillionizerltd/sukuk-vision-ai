@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
-import { TASKS } from "@/lib/demo-data";
+import { useTasks } from "@/hooks/use-modules";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_app/tasks")({
