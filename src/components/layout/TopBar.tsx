@@ -1,7 +1,37 @@
-import { Link } from "@tanstack/react-router";
-import { Bell, Search, Sparkles, HelpCircle, ChevronDown } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Bell, Search, Sparkles, HelpCircle, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useAuth, signOut } from "@/hooks/use-auth";
+
+function initials(name: string | null | undefined, email: string | null | undefined) {
+  const source = (name && name.trim()) || email || "";
+  const parts = source.split(/[\s@.]+/).filter(Boolean);
+  return (parts[0]?.[0] ?? "?").toUpperCase() + (parts[1]?.[0] ?? "").toUpperCase();
+}
 
 export function TopBar() {
+  const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  const name = profile?.full_name || user?.email?.split("@")[0] || "Guest";
+  const subtitle = user ? "Agrofeed Data Room" : "Not signed in";
+
+  const handleSignOut = async () => {
+    await signOut();
+    setOpen(false);
+    navigate({ to: "/login" });
+  };
+
   return (
     <header className="h-16 shrink-0 border-b bg-background/80 backdrop-blur sticky top-0 z-30">
       <div className="h-full flex items-center gap-4 px-4 lg:px-8">
@@ -33,12 +63,53 @@ export function TopBar() {
           <button className="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-secondary transition" aria-label="Help">
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
           </button>
-          <div className="ml-2 flex items-center gap-2 pl-3 border-l">
-            <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-navy font-semibold text-sm">FM</div>
-            <div className="hidden md:block leading-tight">
-              <div className="text-sm font-medium">F. Mwakasege</div>
-              <div className="text-[11px] text-muted-foreground">Agrofeed Administrator</div>
-            </div>
+
+          <div ref={ref} className="ml-2 pl-3 border-l relative">
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="flex items-center gap-2 rounded-lg hover:bg-secondary px-1.5 py-1 transition"
+            >
+              <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-navy font-semibold text-sm">
+                {initials(profile?.full_name, user?.email)}
+              </div>
+              <div className="hidden md:block leading-tight text-left">
+                <div className="text-sm font-medium">{name}</div>
+                <div className="text-[11px] text-muted-foreground">{subtitle}</div>
+              </div>
+            </button>
+            {open && (
+              <div className="absolute right-0 mt-2 w-56 rounded-lg border bg-background shadow-lg py-1 z-40">
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 border-b">
+                      <div className="text-sm font-medium truncate">{name}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">{user.email}</div>
+                    </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-secondary"
+                    >
+                      <UserIcon className="h-4 w-4" /> Profile
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-secondary"
+                    >
+                      <LogOut className="h-4 w-4" /> Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-secondary"
+                  >
+                    <UserIcon className="h-4 w-4" /> Sign in
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

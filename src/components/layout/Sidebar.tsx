@@ -18,6 +18,7 @@ const NAV = [
   { to: "/ai-advisor", label: "AI Advisor", icon: Sparkles },
   { to: "/stakeholders", label: "Stakeholders", icon: Users },
   { to: "/audit-trail", label: "Audit Trail", icon: History },
+  { to: "/profile", label: "Profile", icon: Users },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
