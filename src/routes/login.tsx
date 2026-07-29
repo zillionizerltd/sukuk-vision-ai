@@ -128,6 +128,24 @@ function LoginPage() {
                 </div>
               </label>
             )}
+            {mode === "signup" && (
+              <label className="block text-sm">
+                <span className="text-foreground/80 font-medium">Organisation</span>
+                <select
+                  required
+                  value={org}
+                  onChange={(e) => setOrg(e.target.value)}
+                  className="mt-1.5 w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {ORGS.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-[11px] text-muted-foreground">
+                  Agrofeed Global staff receive full write access. Other organisations get read access plus document upload.
+                </span>
+              </label>
+            )}
             <label className="block text-sm">
               <span className="text-foreground/80 font-medium">Work email</span>
               <div className="relative mt-1.5">
