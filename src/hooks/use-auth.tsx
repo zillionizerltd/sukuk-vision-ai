@@ -29,7 +29,7 @@ export function useAuth() {
     let cancelled = false;
     supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, org")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
