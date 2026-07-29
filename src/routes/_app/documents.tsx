@@ -28,7 +28,7 @@ function Documents() {
 
   const uploadMut = useMutation({
     mutationFn: async (files: FileList) => {
-      if (!user) throw new Error("Not signed in");
+      if (!user) throw new Error("[auth] Not signed in");
       const folder = uploadFolder || selected || "/";
 
       for (const file of Array.from(files)) {
@@ -38,7 +38,12 @@ function Documents() {
           upsert: false,
           contentType: file.type || undefined,
         });
-        if (upErr) throw upErr;
+        if (upErr) {
+          const status = (upErr as { statusCode?: string | number }).statusCode;
+          throw new Error(
+            `[storage.upload] ${upErr.message}${status ? ` (status ${status})` : ""} — bucket=documents path=${path}`,
+          );
+        }
         const { error: insErr } = await supabase.from("documents").insert({
           name: file.name,
           folder,
@@ -49,7 +54,14 @@ function Documents() {
           status: "draft",
           uploaded_by: user.id,
         });
-        if (insErr) throw insErr;
+        if (insErr) {
+          throw new Error(
+            `[db.documents.insert] ${insErr.message}` +
+              (insErr.code ? ` (code ${insErr.code})` : "") +
+              (insErr.details ? ` — ${insErr.details}` : "") +
+              (insErr.hint ? ` — hint: ${insErr.hint}` : ""),
+          );
+        }
       }
     },
     onSuccess: () => {
@@ -57,7 +69,10 @@ function Documents() {
       qc.invalidateQueries({ queryKey: ["documents"] });
       setTimeout(() => setMsg(null), 2500);
     },
-    onError: (e: Error) => setMsg(e.message),
+    onError: (e: Error) => {
+      console.error("[documents upload]", e);
+      setMsg(e.message || String(e));
+    },
   });
 
   const download = async (id: string, name: string) => {
@@ -113,7 +128,17 @@ function Documents() {
 
       />
 
-      {msg && <div className="mb-3 text-xs rounded-md bg-secondary px-3 py-2">{msg}</div>}
+      {msg && (
+        <div
+          className={`mb-3 text-xs rounded-md px-3 py-2 whitespace-pre-wrap break-words ${
+            msg === "Upload complete"
+              ? "bg-secondary"
+              : "bg-destructive/10 text-destructive border border-destructive/30"
+          }`}
+        >
+          {msg}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
         <Card className="max-h-[70vh] overflow-y-auto">
