@@ -185,6 +185,77 @@ function Documents() {
         </div>
       )}
 
+      {uploads.length > 0 && (
+        <Card className="mb-4 !p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-semibold">
+              Uploads
+              {uploadingCount > 0 && <span className="ml-2 text-muted-foreground font-normal">{uploadingCount} in progress</span>}
+              {errorCount > 0 && <span className="ml-2 text-destructive font-normal">{errorCount} failed</span>}
+            </div>
+            {uploads.some((u) => u.status === "success" || u.status === "error") && (
+              <button onClick={clearFinished} className="text-[11px] text-muted-foreground hover:text-foreground">
+                Clear finished
+              </button>
+            )}
+          </div>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {uploads.map((u) => (
+              <div key={u.id} className="rounded-md border bg-background px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <File className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate">{u.file.name}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {u.folder} · {(u.file.size / 1024).toFixed(0)} KB
+                    </div>
+                  </div>
+                  <Pill
+                    tone={
+                      u.status === "success" ? "success" : u.status === "error" ? "danger" : u.status === "uploading" ? "info" : "warning"
+                    }
+                  >
+                    {u.status === "uploading" ? (u.step === "db" ? "saving…" : "uploading…") : u.status}
+                  </Pill>
+                  {u.status === "error" && (
+                    <button
+                      onClick={() => retryUpload(u.id)}
+                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] hover:bg-secondary"
+                      title="Retry"
+                    >
+                      <Loader2 className="h-3 w-3" /> Retry
+                    </button>
+                  )}
+                  {(u.status === "success" || u.status === "error") && (
+                    <button
+                      onClick={() => dismissUpload(u.id)}
+                      className="inline-flex items-center rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary"
+                      title="Dismiss"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {(u.status === "uploading" || u.status === "pending") && (
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${u.progress}%` }}
+                    />
+                  </div>
+                )}
+                {u.status === "error" && u.error && (
+                  <div className="mt-2 text-[11px] text-destructive whitespace-pre-wrap break-words">
+                    {u.error}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
         <Card className="max-h-[70vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
