@@ -24,9 +24,12 @@ const NAV = [
 ] as const;
 
 export function Sidebar() {
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const isAgrofeed = (profile?.org ?? "").toLowerCase() === "agrofeed global";
-  const items = NAV.filter((n) => isAgrofeed || !n.restricted);
+  const base = NAV.filter((n) => isAgrofeed || !n.restricted);
+  const items = isAdmin
+    ? [...base, { to: "/users", label: "User Roles", icon: ShieldCheck } as const]
+    : base;
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       <div className="h-16 flex items-center px-5 border-b border-sidebar-border">

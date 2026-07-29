@@ -8,6 +8,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +26,10 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setRoles([]);
+      return;
+    }
     let cancelled = false;
     supabase
       .from("profiles")
@@ -35,12 +39,19 @@ export function useAuth() {
       .then(({ data }) => {
         if (!cancelled) setProfile(data ?? null);
       });
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (!cancelled) setRoles((data ?? []).map((r) => r.role as string));
+      });
     return () => {
       cancelled = true;
     };
   }, [user]);
 
-  return { session, user, profile, loading };
+  return { session, user, profile, roles, isAdmin: roles.includes("admin"), loading };
 }
 
 export async function signOut() {
