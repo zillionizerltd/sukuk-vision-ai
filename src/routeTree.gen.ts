@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as AppTasksRouteImport } from './routes/_app/tasks'
 import { Route as AppStructuringRouteImport } from './routes/_app/structuring'
 import { Route as AppStakeholdersRouteImport } from './routes/_app/stakeholders'
@@ -40,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppTasksRoute = AppTasksRouteImport.update({
   id: '/tasks',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/stakeholders': typeof AppStakeholdersRoute
   '/structuring': typeof AppStructuringRoute
   '/tasks': typeof AppTasksRoute
+  '/users': typeof AppUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/stakeholders': typeof AppStakeholdersRoute
   '/structuring': typeof AppStructuringRoute
   '/tasks': typeof AppTasksRoute
+  '/users': typeof AppUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/_app/stakeholders': typeof AppStakeholdersRoute
   '/_app/structuring': typeof AppStructuringRoute
   '/_app/tasks': typeof AppTasksRoute
+  '/_app/users': typeof AppUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/stakeholders'
     | '/structuring'
     | '/tasks'
+    | '/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/stakeholders'
     | '/structuring'
     | '/tasks'
+    | '/users'
   id:
     | '__root__'
     | '/'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/_app/stakeholders'
     | '/_app/structuring'
     | '/_app/tasks'
+    | '/_app/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/tasks': {
       id: '/_app/tasks'
@@ -371,6 +390,7 @@ interface AppRouteChildren {
   AppStakeholdersRoute: typeof AppStakeholdersRoute
   AppStructuringRoute: typeof AppStructuringRoute
   AppTasksRoute: typeof AppTasksRoute
+  AppUsersRoute: typeof AppUsersRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -388,6 +408,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStakeholdersRoute: AppStakeholdersRoute,
   AppStructuringRoute: AppStructuringRoute,
   AppTasksRoute: AppTasksRoute,
+  AppUsersRoute: AppUsersRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
