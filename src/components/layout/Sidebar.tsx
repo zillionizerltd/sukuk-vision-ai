@@ -4,32 +4,36 @@ import {
   AlertTriangle, LineChart, FileText, Sparkles, Users, Settings, History,
 } from "lucide-react";
 import { AgrofeedLogo } from "../brand/Logo";
+import { useAuth } from "@/hooks/use-auth";
 
 const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/documents", label: "Data Room", icon: FolderOpen },
-  { to: "/milestones", label: "Milestones", icon: Flag },
-  { to: "/tasks", label: "Tasks", icon: ListChecks },
-  { to: "/structuring", label: "Sukuk Structuring", icon: Layers },
-  { to: "/compliance", label: "Compliance", icon: ShieldCheck },
-  { to: "/risks", label: "Risks", icon: AlertTriangle },
-  { to: "/financials", label: "Financials", icon: LineChart },
-  { to: "/reports", label: "Reports", icon: FileText },
-  { to: "/ai-advisor", label: "AI Advisor", icon: Sparkles },
-  { to: "/stakeholders", label: "Stakeholders", icon: Users },
-  { to: "/audit-trail", label: "Audit Trail", icon: History },
-  { to: "/profile", label: "Profile", icon: Users },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, restricted: true },
+  { to: "/documents", label: "Data Room", icon: FolderOpen, restricted: false },
+  { to: "/milestones", label: "Milestones", icon: Flag, restricted: true },
+  { to: "/tasks", label: "Tasks", icon: ListChecks, restricted: true },
+  { to: "/structuring", label: "Sukuk Structuring", icon: Layers, restricted: true },
+  { to: "/compliance", label: "Compliance", icon: ShieldCheck, restricted: true },
+  { to: "/risks", label: "Risks", icon: AlertTriangle, restricted: true },
+  { to: "/financials", label: "Financials", icon: LineChart, restricted: true },
+  { to: "/reports", label: "Reports", icon: FileText, restricted: true },
+  { to: "/ai-advisor", label: "AI Advisor", icon: Sparkles, restricted: true },
+  { to: "/stakeholders", label: "Stakeholders", icon: Users, restricted: true },
+  { to: "/audit-trail", label: "Audit Trail", icon: History, restricted: true },
+  { to: "/profile", label: "Profile", icon: Users, restricted: false },
+  { to: "/settings", label: "Settings", icon: Settings, restricted: false },
 ] as const;
 
 export function Sidebar() {
+  const { profile } = useAuth();
+  const isAgrofeed = (profile?.org ?? "").toLowerCase() === "agrofeed global";
+  const items = NAV.filter((n) => isAgrofeed || !n.restricted);
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
         <AgrofeedLogo />
       </div>
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-        {NAV.map(({ to, label, icon: Icon }) => (
+        {items.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
