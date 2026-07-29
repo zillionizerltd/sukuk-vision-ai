@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/structuring")({
 });
 
 function Structuring() {
+  const { data: SUKUK_STRUCTURES = [] } = useStructures();
   return (
     <>
       <PageHeader
