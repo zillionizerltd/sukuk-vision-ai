@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, ProgressBar, Button } from "@/components/ui/primitives";
-import { MILESTONES } from "@/lib/demo-data";
+import { useMilestones } from "@/hooks/use-modules";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_app/milestones")({
