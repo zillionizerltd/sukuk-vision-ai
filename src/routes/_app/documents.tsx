@@ -6,7 +6,7 @@ import { FOLDERS } from "@/lib/demo-data";
 import { useDocuments } from "@/hooks/use-modules";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2 } from "lucide-react";
+import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({ meta: [{ title: "Data Room · Documents · Agrofeed Sukuk" }, { name: "description", content: "Secure document repository with AI analysis." }] }),
@@ -118,15 +118,43 @@ function Documents() {
   const uploadingCount = uploads.filter((u) => u.status === "uploading" || u.status === "pending").length;
   const errorCount = uploads.filter((u) => u.status === "error").length;
 
-  const download = async (id: string, name: string) => {
+  const signedUrl = async (id: string): Promise<string | null> => {
     const { data: row } = await supabase.from("documents").select("storage_path").eq("id", id).maybeSingle();
-    if (!row?.storage_path) return setMsg("File missing");
-    const { data, error } = await supabase.storage.from("documents").createSignedUrl(row.storage_path, 60);
-    if (error || !data) return setMsg(error?.message ?? "Cannot sign URL");
-    const a = document.createElement("a");
-    a.href = data.signedUrl;
-    a.download = name;
-    a.click();
+    if (!row?.storage_path) {
+      setMsg("File missing");
+      return null;
+    }
+    const { data, error } = await supabase.storage.from("documents").createSignedUrl(row.storage_path, 300);
+    if (error || !data) {
+      setMsg(error?.message ?? "Cannot sign URL");
+      return null;
+    }
+    return data.signedUrl;
+  };
+
+  const download = async (id: string, name: string) => {
+    const url = await signedUrl(id);
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objUrl;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+    } catch (e) {
+      setMsg(`Download failed: ${(e as Error).message}`);
+    }
+  };
+
+  const preview = async (id: string) => {
+    const url = await signedUrl(id);
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const remove = async (id: string) => {
@@ -326,6 +354,9 @@ function Documents() {
                     <td className="px-4 py-3 text-muted-foreground text-xs tabular-nums">{d.updated}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => preview(d.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Preview">
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
                         <button onClick={() => download(d.id, d.name)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Download">
                           <Download className="h-3.5 w-3.5" />
                         </button>
