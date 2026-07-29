@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill } from "@/components/ui/primitives";
-import { AUDIT } from "@/lib/demo-data";
+import { useAudit } from "@/hooks/use-modules";
 import { Lock } from "lucide-react";
 
 export const Route = createFileRoute("/_app/audit-trail")({
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/audit-trail")({
 });
 
 function Audit() {
+  const { data: AUDIT = [] } = useAudit();
   return (
     <>
       <PageHeader

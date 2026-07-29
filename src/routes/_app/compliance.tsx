@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
-import { COMPLIANCE } from "@/lib/demo-data";
+import { useCompliance } from "@/hooks/use-modules";
 
 export const Route = createFileRoute("/_app/compliance")({
   head: () => ({ meta: [{ title: "Compliance · Agrofeed Sukuk" }, { name: "description", content: "AAOIFI, IFSB, Sharia, IFRS, AML/KYC, ESG, and regulatory compliance." }] }),
@@ -10,10 +10,11 @@ export const Route = createFileRoute("/_app/compliance")({
 const CATEGORIES = ["AAOIFI", "IFSB", "Sharia", "IFRS", "AML", "KYC", "Sanctions", "ESG", "Regulatory", "SPV"];
 
 function Compliance() {
+  const { data: COMPLIANCE = [] } = useCompliance();
   const complete = COMPLIANCE.filter((c) => c.status === "complete").length;
   const gaps = COMPLIANCE.filter((c) => c.status === "gap").length;
   const inprog = COMPLIANCE.filter((c) => c.status === "in_progress").length;
-  const score = Math.round((complete / COMPLIANCE.length) * 100);
+  const score = COMPLIANCE.length ? Math.round((complete / COMPLIANCE.length) * 100) : 0;
   return (
     <>
       <PageHeader title="AI Compliance Engine" subtitle="AAOIFI · IFSB · Sharia governance · IFRS · AML/KYC · ESG · Tanzania & UAE regulatory"

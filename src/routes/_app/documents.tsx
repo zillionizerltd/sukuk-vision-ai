@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
-import { DOCUMENTS, FOLDERS } from "@/lib/demo-data";
+import { FOLDERS } from "@/lib/demo-data";
+import { useDocuments } from "@/hooks/use-modules";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter } from "lucide-react";
 
 export const Route = createFileRoute("/_app/documents")({
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/_app/documents")({
 function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const { data: DOCUMENTS = [] } = useDocuments();
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
 
   return (

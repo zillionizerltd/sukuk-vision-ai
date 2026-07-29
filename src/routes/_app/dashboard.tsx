@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button, ProgressBar } from "@/components/ui/primitives";
 import { ReadinessGauge } from "@/components/dashboard/ReadinessGauge";
-import { KPIS, READINESS, MILESTONES, NOTIFICATIONS, GAP_ANALYSIS, FINANCIALS } from "@/lib/demo-data";
+import { KPIS, READINESS, NOTIFICATIONS, GAP_ANALYSIS, FINANCIALS } from "@/lib/demo-data";
+import { useMilestones } from "@/hooks/use-modules";
 import { ArrowUpRight, FileText, Flag, ShieldAlert, Users, Wallet, Calendar, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, BarChart, Bar, Legend } from "recharts";
 
@@ -36,6 +37,7 @@ function KPI({ icon: Icon, label, value, tone = "neutral", sub }: { icon: any; l
 }
 
 function Dashboard() {
+  const { data: MILESTONES = [] } = useMilestones();
   return (
     <>
       <PageHeader

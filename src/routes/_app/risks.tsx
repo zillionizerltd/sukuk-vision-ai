@@ -1,17 +1,18 @@
 import { Fragment } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
-import { RISKS } from "@/lib/demo-data";
+import { useRisks, type RiskRow } from "@/hooks/use-modules";
 
 export const Route = createFileRoute("/_app/risks")({
   head: () => ({ meta: [{ title: "Risks · Agrofeed Sukuk" }, { name: "description", content: "Risk register and heatmap." }] }),
   component: Risks,
 });
 
-const LEVELS = ["Low", "Medium", "High"];
+const LEVELS = ["Low", "Medium", "High"] as const;
 
-function cell(prob: string, impact: string) {
-  const p = LEVELS.indexOf(prob), i = LEVELS.indexOf(impact);
+function cell(prob: string, impact: string, RISKS: RiskRow[]) {
+  const p = LEVELS.indexOf(prob as (typeof LEVELS)[number]);
+  const i = LEVELS.indexOf(impact as (typeof LEVELS)[number]);
   const score = p + i;
   const bg = score <= 1 ? "bg-[color-mix(in_oklab,var(--success)_18%,transparent)]"
            : score <= 2 ? "bg-[color-mix(in_oklab,var(--warning)_22%,transparent)]"
@@ -26,6 +27,7 @@ function cell(prob: string, impact: string) {
 }
 
 function Risks() {
+  const { data: RISKS = [] } = useRisks();
   return (
     <>
       <PageHeader title="Risk Management" subtitle="18 categories · probability × impact heatmap · mitigation tracking"
@@ -39,7 +41,7 @@ function Risks() {
           {[...LEVELS].reverse().map((prob) => (
             <Fragment key={prob}>
               <div className="flex items-center justify-end pr-2 font-medium text-muted-foreground">{prob} prob</div>
-              {LEVELS.map((impact) => <div key={`${prob}-${impact}`}>{cell(prob, impact)}</div>)}
+              {LEVELS.map((impact) => <div key={`${prob}-${impact}`}>{cell(prob, impact, RISKS)}</div>)}
             </Fragment>
           ))}
         </div>

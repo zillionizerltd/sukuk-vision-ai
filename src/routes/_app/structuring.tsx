@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, ProgressBar, Button } from "@/components/ui/primitives";
-import { SUKUK_STRUCTURES } from "@/lib/demo-data";
+import { useStructures } from "@/hooks/use-modules";
 import { Sparkles, Info } from "lucide-react";
 
 export const Route = createFileRoute("/_app/structuring")({
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/structuring")({
 });
 
 function Structuring() {
+  const { data: SUKUK_STRUCTURES = [] } = useStructures();
   return (
     <>
       <PageHeader
