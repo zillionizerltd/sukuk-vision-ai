@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { FOLDERS } from "@/lib/demo-data";
 import { useDocuments } from "@/hooks/use-modules";
