@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_app/audit-trail")({
 });
 
 function Audit() {
+  const { data: AUDIT = [] } = useAudit();
   return (
     <>
       <PageHeader
