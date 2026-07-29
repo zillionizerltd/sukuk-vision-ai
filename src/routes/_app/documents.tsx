@@ -13,11 +13,22 @@ export const Route = createFileRoute("/_app/documents")({
   component: Documents,
 });
 
+type UploadItem = {
+  id: string;
+  file: File;
+  folder: string;
+  status: "pending" | "uploading" | "success" | "error";
+  progress: number; // 0-100
+  error?: string;
+  step?: "storage" | "db";
+};
+
 function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [uploadFolder, setUploadFolder] = useState<string>(FOLDERS[0]);
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile } = useAuth();
@@ -26,54 +37,86 @@ function Documents() {
 
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
 
-  const uploadMut = useMutation({
-    mutationFn: async (files: FileList) => {
-      if (!user) throw new Error("[auth] Not signed in");
-      const folder = uploadFolder || selected || "/";
+  const updateUpload = (id: string, patch: Partial<UploadItem>) =>
+    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
 
-      for (const file of Array.from(files)) {
-        const path = `${user.id}/${Date.now()}-${file.name}`;
-        const { error: upErr } = await supabase.storage.from("documents").upload(path, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type || undefined,
-        });
-        if (upErr) {
-          const status = (upErr as { statusCode?: string | number }).statusCode;
-          throw new Error(
-            `[storage.upload] ${upErr.message}${status ? ` (status ${status})` : ""} — bucket=documents path=${path}`,
-          );
-        }
-        const { error: insErr } = await supabase.from("documents").insert({
-          name: file.name,
-          folder,
-          size_bytes: file.size,
-          mime_type: file.type || null,
-          storage_path: path,
-          confidentiality: "confidential",
-          status: "draft",
-          uploaded_by: user.id,
-        });
-        if (insErr) {
-          throw new Error(
-            `[db.documents.insert] ${insErr.message}` +
-              (insErr.code ? ` (code ${insErr.code})` : "") +
-              (insErr.details ? ` — ${insErr.details}` : "") +
-              (insErr.hint ? ` — hint: ${insErr.hint}` : ""),
-          );
-        }
-      }
-    },
-    onSuccess: () => {
-      setMsg("Upload complete");
-      qc.invalidateQueries({ queryKey: ["documents"] });
-      setTimeout(() => setMsg(null), 2500);
-    },
-    onError: (e: Error) => {
-      console.error("[documents upload]", e);
-      setMsg(e.message || String(e));
-    },
-  });
+  const runUpload = async (item: UploadItem) => {
+    if (!user) {
+      updateUpload(item.id, { status: "error", error: "[auth] Not signed in", progress: 0 });
+      return;
+    }
+    updateUpload(item.id, { status: "uploading", progress: 10, step: "storage", error: undefined });
+    const path = `${user.id}/${Date.now()}-${item.file.name}`;
+    const { error: upErr } = await supabase.storage.from("documents").upload(path, item.file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: item.file.type || undefined,
+    });
+    if (upErr) {
+      const status = (upErr as { statusCode?: string | number }).statusCode;
+      updateUpload(item.id, {
+        status: "error",
+        step: "storage",
+        error: `[storage.upload] ${upErr.message}${status ? ` (status ${status})` : ""} — bucket=documents path=${path}`,
+        progress: 0,
+      });
+      return;
+    }
+    updateUpload(item.id, { progress: 70, step: "db" });
+    const { error: insErr } = await supabase.from("documents").insert({
+      name: item.file.name,
+      folder: item.folder,
+      size_bytes: item.file.size,
+      mime_type: item.file.type || null,
+      storage_path: path,
+      confidentiality: "confidential",
+      status: "draft",
+      uploaded_by: user.id,
+    });
+    if (insErr) {
+      // Cleanup orphan storage file
+      await supabase.storage.from("documents").remove([path]).catch(() => {});
+      updateUpload(item.id, {
+        status: "error",
+        step: "db",
+        error:
+          `[db.documents.insert] ${insErr.message}` +
+          (insErr.code ? ` (code ${insErr.code})` : "") +
+          (insErr.details ? ` — ${insErr.details}` : "") +
+          (insErr.hint ? ` — hint: ${insErr.hint}` : ""),
+        progress: 0,
+      });
+      return;
+    }
+    updateUpload(item.id, { status: "success", progress: 100, error: undefined });
+    qc.invalidateQueries({ queryKey: ["documents"] });
+  };
+
+  const startFiles = (files: FileList) => {
+    const folder = uploadFolder || selected || "/";
+    const items: UploadItem[] = Array.from(files).map((file) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name}`,
+      file,
+      folder,
+      status: "pending",
+      progress: 0,
+    }));
+    setUploads((prev) => [...items, ...prev]);
+    items.forEach((it) => void runUpload(it));
+  };
+
+  const retryUpload = (id: string) => {
+    const item = uploads.find((u) => u.id === id);
+    if (item) void runUpload(item);
+  };
+
+  const dismissUpload = (id: string) => setUploads((prev) => prev.filter((u) => u.id !== id));
+
+  const clearFinished = () =>
+    setUploads((prev) => prev.filter((u) => u.status !== "success" && u.status !== "error"));
+
+  const uploadingCount = uploads.filter((u) => u.status === "uploading" || u.status === "pending").length;
+  const errorCount = uploads.filter((u) => u.status === "error").length;
 
   const download = async (id: string, name: string) => {
     const { data: row } = await supabase.from("documents").select("storage_path").eq("id", id).maybeSingle();
@@ -94,9 +137,10 @@ function Documents() {
   };
 
   const onFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length) uploadMut.mutate(e.target.files);
+    if (e.target.files && e.target.files.length) startFiles(e.target.files);
     e.target.value = "";
   };
+
 
   return (
     <>
