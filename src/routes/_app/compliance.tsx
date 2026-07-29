@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
-import { COMPLIANCE } from "@/lib/demo-data";
+import { useCompliance } from "@/hooks/use-modules";
 
 export const Route = createFileRoute("/_app/compliance")({
   head: () => ({ meta: [{ title: "Compliance · Agrofeed Sukuk" }, { name: "description", content: "AAOIFI, IFSB, Sharia, IFRS, AML/KYC, ESG, and regulatory compliance." }] }),
