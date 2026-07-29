@@ -107,7 +107,13 @@ function ProfilePage() {
         </Card>
 
         <Card>
-          <h3 className="font-semibold mb-4">Roles</h3>
+          <h3 className="font-semibold mb-4">Organisation</h3>
+          <div className="text-sm font-medium">{profile?.org || "—"}</div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Your organisation determines your baseline access. Agrofeed Global has full write access; other organisations have read access and can upload documents.
+          </p>
+
+          <h3 className="font-semibold mt-6 mb-3">Roles</h3>
           <div className="flex flex-wrap gap-1.5">
             {roles.length === 0 ? (
               <Pill tone="neutral">member</Pill>
@@ -117,9 +123,6 @@ function ProfilePage() {
               ))
             )}
           </div>
-          <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
-            Roles control what you can view, edit, and approve across the data room. Contact an administrator to request additional roles.
-          </p>
         </Card>
       </div>
     </>

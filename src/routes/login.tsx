@@ -17,10 +17,19 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+const ORGS = [
+  "Agrofeed Global",
+  "Tesserant Capital",
+  "Al Huda CIBE",
+  "Sharia Supervisory Board",
+  "External Legal Counsel",
+] as const;
+
 function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [fullName, setFullName] = useState("");
+  const [org, setOrg] = useState<string>(ORGS[0]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +52,7 @@ function LoginPage() {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: { full_name: fullName, org },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -60,6 +69,7 @@ function LoginPage() {
       setBusy(false);
     }
   };
+
 
   const google = async () => {
     setError(null);
@@ -116,6 +126,24 @@ function LoginPage() {
                          placeholder="Fatuma Mwakasege"
                          className="w-full h-11 rounded-lg border border-input bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
+              </label>
+            )}
+            {mode === "signup" && (
+              <label className="block text-sm">
+                <span className="text-foreground/80 font-medium">Organisation</span>
+                <select
+                  required
+                  value={org}
+                  onChange={(e) => setOrg(e.target.value)}
+                  className="mt-1.5 w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {ORGS.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-[11px] text-muted-foreground">
+                  Agrofeed Global staff receive full write access. Other organisations get read access plus document upload.
+                </span>
               </label>
             )}
             <label className="block text-sm">
