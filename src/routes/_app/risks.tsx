@@ -41,7 +41,7 @@ function Risks() {
           {[...LEVELS].reverse().map((prob) => (
             <Fragment key={prob}>
               <div className="flex items-center justify-end pr-2 font-medium text-muted-foreground">{prob} prob</div>
-              {LEVELS.map((impact) => <div key={`${prob}-${impact}`}>{cell(prob, impact)}</div>)}
+              {LEVELS.map((impact) => <div key={`${prob}-${impact}`}>{cell(prob, impact, RISKS)}</div>)}
             </Fragment>
           ))}
         </div>
