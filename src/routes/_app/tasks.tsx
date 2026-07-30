@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useTasks } from "@/hooks/use-modules";
+import { useCommentCounts } from "@/hooks/use-comments";
+import { CommentButton, CommentDrawer } from "@/components/collab/CommentDrawer";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_app/tasks")({
@@ -10,6 +13,9 @@ export const Route = createFileRoute("/_app/tasks")({
 
 function Tasks() {
   const { data: TASKS = [] } = useTasks();
+  const { data: counts = {} } = useCommentCounts("task");
+  const [active, setActive] = useState<{ id: string; title: string } | null>(null);
+
   const cols = [
     { key: "not_started", label: "Not started", tone: "neutral" as const },
     { key: "in_progress", label: "In progress", tone: "warning" as const },
@@ -39,7 +45,10 @@ function Tasks() {
                       <span>{t.org} · {t.assignee}</span>
                       <Pill tone={t.priority === "Critical" ? "danger" : t.priority === "High" ? "warning" : "info"}>{t.priority}</Pill>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-1 tabular-nums">Due {t.due}</div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <div className="text-[11px] text-muted-foreground tabular-nums">Due {t.due}</div>
+                      <CommentButton count={counts[t.id] ?? 0} onClick={() => setActive({ id: t.id, title: t.title })} />
+                    </div>
                   </div>
                 ))}
                 {items.length === 0 && <div className="text-xs text-muted-foreground text-center py-4">No tasks</div>}
@@ -48,6 +57,11 @@ function Tasks() {
           );
         })}
       </div>
+
+      {active && (
+        <CommentDrawer itemType="task" itemId={active.id} title={active.title} onClose={() => setActive(null)} />
+      )}
     </>
   );
+
 }

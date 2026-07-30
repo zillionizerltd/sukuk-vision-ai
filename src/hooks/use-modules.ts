@@ -39,6 +39,7 @@ export function useDocuments() {
 // ---------- Milestones ----------
 export type MilestoneRow = {
   id: string;
+  uuid: string;
   name: string;
   owner: string;
   due: string;
@@ -56,6 +57,7 @@ export function useMilestones() {
       if (error) throw error;
       return (data ?? []).map((m) => ({
         id: m.code ?? m.id.slice(0, 6),
+        uuid: m.id,
         name: m.title,
         owner: m.owner_org ?? "",
         due: m.due_date ?? "",
@@ -65,6 +67,7 @@ export function useMilestones() {
     },
   });
 }
+
 
 // ---------- Tasks ----------
 export type TaskRow = {
