@@ -92,7 +92,7 @@ function UsersPage() {
     <>
       <PageHeader
         title="User roles"
-        subtitle="Grant or revoke platform roles. Admins and advisors have full write access."
+        subtitle="Assign organisations and grant or revoke platform roles. Admins and advisors have full write access."
       />
 
       {msg && <div className="mb-4 text-xs text-muted-foreground">{msg}</div>}
@@ -119,7 +119,24 @@ function UsersPage() {
               {(data ?? []).map((u) => (
                 <tr key={u.id} className="border-b last:border-0">
                   <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
-                  <td className="py-2.5 pr-4 text-muted-foreground">{u.org || "—"}</td>
+                  <td className="py-2.5 pr-4">
+                    <select
+                      value={ORGS.includes((u.org ?? "") as (typeof ORGS)[number]) ? (u.org as string) : ""}
+                      onChange={(e) => changeOrg(u.id, e.target.value)}
+                      disabled={busy === `${u.id}:org`}
+                      aria-label={`Organisation for ${u.full_name || u.id}`}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
+                    >
+                      <option value="" disabled>
+                        {u.org || "— select —"}
+                      </option>
+                      {ORGS.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="py-2.5 pr-4">
                     <div className="flex flex-wrap gap-1">
                       {u.roles.length === 0 ? (
