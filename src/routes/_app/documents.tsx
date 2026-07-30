@@ -27,6 +27,7 @@ type UploadItem = {
 
 function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<PreviewDoc | null>(null);
   const [q, setQ] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [uploadFolder, setUploadFolder] = useState<string>(FOLDERS[0]);
@@ -340,7 +341,11 @@ function Documents() {
               </thead>
               <tbody className="divide-y">
                 {filtered.map((d) => (
-                  <tr key={d.id} className="hover:bg-secondary/40 transition-colors">
+                  <tr
+                    key={d.id}
+                    onClick={() => setPreviewDoc(d as PreviewDoc)}
+                    className="hover:bg-secondary/40 transition-colors cursor-pointer"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
                         <File className="h-4 w-4 text-primary" />
@@ -357,11 +362,12 @@ function Documents() {
                       </Pill>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs tabular-nums">{d.updated}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => preview(d.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Preview">
+                        <button onClick={() => setPreviewDoc(d as PreviewDoc)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Preview">
                           <Eye className="h-3.5 w-3.5" />
                         </button>
+
                         <button onClick={() => download(d.id, d.name)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Download">
                           <Download className="h-3.5 w-3.5" />
                         </button>
