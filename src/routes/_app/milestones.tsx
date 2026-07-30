@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, ProgressBar, Button } from "@/components/ui/primitives";
 import { useMilestones } from "@/hooks/use-modules";
+import { useCommentCounts } from "@/hooks/use-comments";
+import { CommentButton, CommentDrawer } from "@/components/collab/CommentDrawer";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_app/milestones")({
@@ -10,6 +13,9 @@ export const Route = createFileRoute("/_app/milestones")({
 
 function Milestones() {
   const { data: MILESTONES = [] } = useMilestones();
+  const { data: counts = {} } = useCommentCounts("milestone");
+  const [active, setActive] = useState<{ id: string; title: string } | null>(null);
+
   const groups = {
     completed: MILESTONES.filter((m) => m.status === "completed"),
     inProgress: MILESTONES.filter((m) => m.status === "in_progress"),
