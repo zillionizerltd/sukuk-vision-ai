@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useTasks } from "@/hooks/use-modules";
+import { useCommentCounts } from "@/hooks/use-comments";
+import { CommentButton, CommentDrawer } from "@/components/collab/CommentDrawer";
 import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_app/tasks")({
@@ -10,6 +13,9 @@ export const Route = createFileRoute("/_app/tasks")({
 
 function Tasks() {
   const { data: TASKS = [] } = useTasks();
+  const { data: counts = {} } = useCommentCounts("task");
+  const [active, setActive] = useState<{ id: string; title: string } | null>(null);
+
   const cols = [
     { key: "not_started", label: "Not started", tone: "neutral" as const },
     { key: "in_progress", label: "In progress", tone: "warning" as const },
