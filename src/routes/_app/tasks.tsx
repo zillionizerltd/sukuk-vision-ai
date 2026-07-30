@@ -45,7 +45,10 @@ function Tasks() {
                       <span>{t.org} · {t.assignee}</span>
                       <Pill tone={t.priority === "Critical" ? "danger" : t.priority === "High" ? "warning" : "info"}>{t.priority}</Pill>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-1 tabular-nums">Due {t.due}</div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <div className="text-[11px] text-muted-foreground tabular-nums">Due {t.due}</div>
+                      <CommentButton count={counts[t.id] ?? 0} onClick={() => setActive({ id: t.id, title: t.title })} />
+                    </div>
                   </div>
                 ))}
                 {items.length === 0 && <div className="text-xs text-muted-foreground text-center py-4">No tasks</div>}
@@ -54,6 +57,11 @@ function Tasks() {
           );
         })}
       </div>
+
+      {active && (
+        <CommentDrawer itemType="task" itemId={active.id} title={active.title} onClose={() => setActive(null)} />
+      )}
     </>
   );
+
 }
