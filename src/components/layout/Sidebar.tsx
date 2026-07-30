@@ -6,11 +6,14 @@ import {
 import { AgrofeedLogo } from "../brand/Logo";
 import { useAuth } from "@/hooks/use-auth";
 
+// Orgs (besides Agrofeed Global) allowed to see Milestones + Tasks
+const PARTNER_ORGS = ["al huda cibe", "tesserant capital", "tesserant"];
+
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, restricted: true },
   { to: "/documents", label: "Data Room", icon: FolderOpen, restricted: false },
-  { to: "/milestones", label: "Milestones", icon: Flag, restricted: true },
-  { to: "/tasks", label: "Tasks", icon: ListChecks, restricted: true },
+  { to: "/milestones", label: "Milestones", icon: Flag, restricted: true, partner: true },
+  { to: "/tasks", label: "Tasks", icon: ListChecks, restricted: true, partner: true },
   { to: "/structuring", label: "Sukuk Structuring", icon: Layers, restricted: true },
   { to: "/compliance", label: "Compliance", icon: ShieldCheck, restricted: true },
   { to: "/risks", label: "Risks", icon: AlertTriangle, restricted: true },
@@ -25,8 +28,12 @@ const NAV = [
 
 export function Sidebar() {
   const { profile, isAdmin } = useAuth();
-  const isAgrofeed = (profile?.org ?? "").toLowerCase() === "agrofeed global";
-  const base = NAV.filter((n) => isAgrofeed || !n.restricted);
+  const org = (profile?.org ?? "").toLowerCase();
+  const isAgrofeed = org === "agrofeed global";
+  const isPartner = PARTNER_ORGS.some((o) => org.includes(o));
+  const base = NAV.filter(
+    (n) => isAgrofeed || !n.restricted || (isPartner && "partner" in n && n.partner),
+  );
   const items = isAdmin
     ? [...base, { to: "/users", label: "User Roles", icon: ShieldCheck } as const]
     : base;

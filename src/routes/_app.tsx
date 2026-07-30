@@ -14,6 +14,10 @@ const AGROFEED_ONLY = [
   "/risks", "/financials", "/reports", "/ai-advisor", "/stakeholders", "/audit-trail",
 ];
 
+// Partner orgs also get Milestones + Tasks
+const PARTNER_ORGS = ["al huda cibe", "tesserant capital", "tesserant"];
+const PARTNER_ALLOWED = ["/milestones", "/tasks"];
+
 function AppLayout() {
   const { profile, loading } = useAuth();
   const location = useLocation();
@@ -21,8 +25,14 @@ function AppLayout() {
 
   useEffect(() => {
     if (loading || !profile) return;
-    const isAgrofeed = (profile.org ?? "").toLowerCase() === "agrofeed global";
-    if (!isAgrofeed && AGROFEED_ONLY.some((p) => location.pathname.startsWith(p))) {
+    const org = (profile.org ?? "").toLowerCase();
+    const isAgrofeed = org === "agrofeed global";
+    const isPartner = PARTNER_ORGS.some((o) => org.includes(o));
+    if (isAgrofeed) return;
+    const blocked = AGROFEED_ONLY.filter(
+      (p) => !(isPartner && PARTNER_ALLOWED.includes(p)),
+    );
+    if (blocked.some((p) => location.pathname.startsWith(p))) {
       navigate({ to: "/documents", replace: true });
     }
   }, [profile, loading, location.pathname, navigate]);
