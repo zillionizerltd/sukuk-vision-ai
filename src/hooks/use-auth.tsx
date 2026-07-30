@@ -9,7 +9,8 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
@@ -20,7 +21,8 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      setLoading(false);
+      setSessionLoading(false);
+      if (!data.session?.user) setDataLoading(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -28,30 +30,30 @@ export function useAuth() {
   useEffect(() => {
     if (!user) {
       setRoles([]);
+      setProfile(null);
+      setDataLoading(false);
       return;
     }
     let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("id, full_name, org")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setProfile(data ?? null);
-      });
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .then(({ data }) => {
-        if (!cancelled) setRoles((data ?? []).map((r) => r.role as string));
-      });
+    setDataLoading(true);
+    Promise.all([
+      supabase.from("profiles").select("id, full_name, org").eq("id", user.id).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", user.id),
+    ]).then(([p, r]) => {
+      if (cancelled) return;
+      setProfile(p.data ?? null);
+      setRoles((r.data ?? []).map((x) => x.role as string));
+      setDataLoading(false);
+    });
     return () => {
       cancelled = true;
     };
   }, [user]);
 
+  const loading = sessionLoading || dataLoading;
+
   return { session, user, profile, roles, isAdmin: roles.includes("admin"), loading };
+
 }
 
 export async function signOut() {
