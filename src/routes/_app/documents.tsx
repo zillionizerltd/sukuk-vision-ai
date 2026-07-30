@@ -7,6 +7,7 @@ import { useDocuments } from "@/hooks/use-modules";
 import { useFolderAccess, allowedFolders } from "@/hooks/use-folder-access";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { DocumentPreviewModal, type PreviewDoc } from "@/components/documents/DocumentPreviewModal";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_app/documents")({
