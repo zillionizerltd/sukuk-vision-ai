@@ -51,3 +51,17 @@ export function useDeleteTask() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
 }
+
+export function useUpdateTaskDueDate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; due_date: string | null }) => {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ due_date: vars.due_date || null })
+        .eq("id", vars.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
