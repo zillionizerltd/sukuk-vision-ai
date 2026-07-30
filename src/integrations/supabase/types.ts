@@ -170,6 +170,42 @@ export type Database = {
         }
         Relationships: []
       }
+      item_comments: {
+        Row: {
+          author_id: string
+          author_name: string | null
+          author_org: string | null
+          body: string
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          author_name?: string | null
+          author_org?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string | null
+          author_org?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       milestones: {
         Row: {
           code: string | null
