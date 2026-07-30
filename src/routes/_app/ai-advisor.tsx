@@ -14,6 +14,8 @@ import {
   useStakeholders,
   useFinancialMetrics,
 } from "@/hooks/use-modules";
+import { AdvisorActionCard } from "@/components/collab/AdvisorActionCard";
+import type { AdvisorAction } from "@/hooks/use-advisor-actions";
 
 export const Route = createFileRoute("/_app/ai-advisor")({
   head: () => ({
@@ -34,6 +36,8 @@ const SUGGESTIONS = [
   "What are the top 5 risks blocking issuance?",
   "Which milestones are at risk of slipping?",
   "Draft an investor progress update for this month",
+  "Create tasks to close our top three compliance gaps",
+  "Request the documents we are still missing for issuance",
 ];
 
 function line(o: Record<string, unknown>) {
@@ -141,6 +145,21 @@ function Advisor() {
             const text = m.parts
               .map((p) => (p.type === "text" ? p.text : ""))
               .join("");
+            const actions = m.parts
+              .filter(
+                (p: any) =>
+                  typeof p.type === "string" &&
+                  p.type.startsWith("tool-") &&
+                  p.state === "output-available" &&
+                  p.output?.kind,
+              )
+              .map((p: any) => p.output as AdvisorAction);
+            const pendingActions = m.parts.some(
+              (p: any) =>
+                typeof p.type === "string" &&
+                p.type.startsWith("tool-") &&
+                (p.state === "input-streaming" || p.state === "input-available"),
+            );
             if (m.role === "user") {
               return (
                 <div key={m.id} className="flex justify-end">
@@ -155,11 +174,23 @@ function Advisor() {
                 <div className="h-8 w-8 rounded-lg gradient-emerald flex items-center justify-center shrink-0">
                   <Sparkles className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <Card className="flex-1">
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed">
-                    {text || <span className="text-muted-foreground">Thinking…</span>}
-                  </div>
-                </Card>
+                <div className="flex-1 space-y-3">
+                  {(text || (!actions.length && !pendingActions)) && (
+                    <Card>
+                      <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed">
+                        {text || <span className="text-muted-foreground">Thinking…</span>}
+                      </div>
+                    </Card>
+                  )}
+                  {pendingActions && !actions.length && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing an action…
+                    </div>
+                  )}
+                  {actions.map((a, i) => (
+                    <AdvisorActionCard key={`${m.id}-action-${i}`} action={a} />
+                  ))}
+                </div>
               </div>
             );
           })}
