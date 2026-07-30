@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type ItemType = "milestone" | "task";
+export type ItemType = "milestone" | "task" | "document";
 
 export type CommentRow = {
   id: string;
