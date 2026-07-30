@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { FOLDERS } from "@/lib/demo-data";
 import { useDocuments } from "@/hooks/use-modules";
+import { useFolderAccess, allowedFolders } from "@/hooks/use-folder-access";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
@@ -32,10 +33,13 @@ function Documents() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile } = useAuth();
+  const { data: access } = useFolderAccess();
   const qc = useQueryClient();
   const canWrite = (profile?.org ?? "").toLowerCase() === "agrofeed global";
+  const visibleFolders = allowedFolders(access, profile?.org, FOLDERS);
 
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
+
 
   const updateUpload = (id: string, patch: Partial<UploadItem>) =>
     setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
@@ -185,7 +189,7 @@ function Documents() {
                 onChange={(e) => setUploadFolder(e.target.value)}
                 className="h-9 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {FOLDERS.map((f) => (
+                {visibleFolders.map((f) => (
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
@@ -295,7 +299,7 @@ function Documents() {
             <span className="ml-auto text-[10px] text-muted-foreground">{DOCUMENTS.length}</span>
           </button>
           <div className="mt-1 space-y-0.5">
-            {FOLDERS.map((f) => {
+            {visibleFolders.map((f) => {
               const count = DOCUMENTS.filter((d) => d.folder === f).length;
               return (
                 <button key={f} onClick={() => { setSelected(f); setUploadFolder(f); }}

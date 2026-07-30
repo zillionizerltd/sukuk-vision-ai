@@ -4,7 +4,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, PageHeader, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { ShieldCheck, Check } from "lucide-react";
+import { useFolderAccess, useToggleFolderAccess } from "@/hooks/use-folder-access";
+import { FOLDERS } from "@/lib/demo-data";
+import { ShieldCheck, Check, FolderOpen } from "lucide-react";
 
 export const Route = createFileRoute("/_app/users")({
   head: () => ({
@@ -37,6 +39,10 @@ function UsersPage() {
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [accessOrg, setAccessOrg] = useState<string>(ORGS[1]);
+  const { data: access } = useFolderAccess();
+  const toggleFolder = useToggleFolderAccess();
+
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate({ to: "/documents", replace: true });
@@ -174,6 +180,55 @@ function UsersPage() {
           </table>
         )}
       </Card>
+
+      <Card className="mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <h3 className="font-semibold flex items-center gap-2">
+            <FolderOpen className="h-4 w-4 text-primary" /> Data Room folder access
+          </h3>
+          <select
+            value={accessOrg}
+            onChange={(e) => setAccessOrg(e.target.value)}
+            aria-label="Organisation for folder access"
+            className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+          >
+            {ORGS.filter((o) => o !== "Agrofeed Global").map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Agrofeed Global always sees every folder. For other organisations, tick the folders they may
+          access — if none are ticked, that organisation sees all folders.
+        </p>
+        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+          {FOLDERS.map((f) => {
+            const granted = (access ?? []).some(
+              (r) => r.org.toLowerCase() === accessOrg.toLowerCase() && r.folder === f,
+            );
+            return (
+              <label
+                key={f}
+                className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm cursor-pointer hover:bg-secondary"
+              >
+                <input
+                  type="checkbox"
+                  checked={granted}
+                  onChange={() =>
+                    toggleFolder.mutate(
+                      { org: accessOrg, folder: f, granted },
+                      { onError: (e) => setMsg((e as Error).message) },
+                    )
+                  }
+                  className="h-4 w-4 accent-[hsl(var(--primary))]"
+                />
+                <span className="truncate">{f}</span>
+              </label>
+            );
+          })}
+        </div>
+      </Card>
     </>
   );
 }
+
