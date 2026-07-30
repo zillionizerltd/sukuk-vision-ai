@@ -33,10 +33,13 @@ function Documents() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile } = useAuth();
+  const { data: access } = useFolderAccess();
   const qc = useQueryClient();
   const canWrite = (profile?.org ?? "").toLowerCase() === "agrofeed global";
+  const visibleFolders = allowedFolders(access, profile?.org, FOLDERS);
 
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
+
 
   const updateUpload = (id: string, patch: Partial<UploadItem>) =>
     setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
