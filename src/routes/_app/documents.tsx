@@ -157,11 +157,8 @@ function Documents() {
     }
   };
 
-  const preview = async (id: string) => {
-    const url = await signedUrl(id);
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+
+
 
   const remove = async (id: string) => {
     const { data: row } = await supabase.from("documents").select("storage_path").eq("id", id).maybeSingle();
