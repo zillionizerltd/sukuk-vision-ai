@@ -170,6 +170,30 @@ export type Database = {
         }
         Relationships: []
       }
+      folder_access: {
+        Row: {
+          created_at: string
+          folder: string
+          id: string
+          org: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          folder: string
+          id?: string
+          org: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          folder?: string
+          id?: string
+          org?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       item_comments: {
         Row: {
           author_id: string
@@ -558,6 +582,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_folder: {
+        Args: { _folder: string; _user_id: string }
+        Returns: boolean
+      }
       can_write: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
