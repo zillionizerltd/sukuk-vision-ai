@@ -23,6 +23,14 @@ export const Route = createFileRoute("/_app/users")({
 const ROLES = ["admin", "advisor", "auditor", "investor", "member"] as const;
 type Role = (typeof ROLES)[number];
 
+const ORGS = [
+  "Agrofeed Global",
+  "Tesserant Capital",
+  "Al Huda CIBE",
+  "Sharia Supervisory Board",
+  "External Legal Counsel",
+] as const;
+
 function UsersPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
