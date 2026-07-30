@@ -7,6 +7,7 @@ import { useDocuments } from "@/hooks/use-modules";
 import { useFolderAccess, allowedFolders } from "@/hooks/use-folder-access";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { DocumentPreviewModal, type PreviewDoc } from "@/components/documents/DocumentPreviewModal";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/_app/documents")({
@@ -26,6 +27,7 @@ type UploadItem = {
 
 function Documents() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<PreviewDoc | null>(null);
   const [q, setQ] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [uploadFolder, setUploadFolder] = useState<string>(FOLDERS[0]);
@@ -155,11 +157,8 @@ function Documents() {
     }
   };
 
-  const preview = async (id: string) => {
-    const url = await signedUrl(id);
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+
+
 
   const remove = async (id: string) => {
     const { data: row } = await supabase.from("documents").select("storage_path").eq("id", id).maybeSingle();
@@ -339,7 +338,11 @@ function Documents() {
               </thead>
               <tbody className="divide-y">
                 {filtered.map((d) => (
-                  <tr key={d.id} className="hover:bg-secondary/40 transition-colors">
+                  <tr
+                    key={d.id}
+                    onClick={() => setPreviewDoc(d as PreviewDoc)}
+                    className="hover:bg-secondary/40 transition-colors cursor-pointer"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
                         <File className="h-4 w-4 text-primary" />
@@ -356,11 +359,12 @@ function Documents() {
                       </Pill>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs tabular-nums">{d.updated}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => preview(d.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Preview">
+                        <button onClick={() => setPreviewDoc(d as PreviewDoc)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Preview">
                           <Eye className="h-3.5 w-3.5" />
                         </button>
+
                         <button onClick={() => download(d.id, d.name)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary" title="Download">
                           <Download className="h-3.5 w-3.5" />
                         </button>
@@ -381,6 +385,9 @@ function Documents() {
           </Card>
         </div>
       </div>
+
+      {previewDoc && <DocumentPreviewModal doc={previewDoc} onClose={() => setPreviewDoc(null)} />}
     </>
+
   );
 }
