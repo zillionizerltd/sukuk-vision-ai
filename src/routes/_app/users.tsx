@@ -39,6 +39,10 @@ function UsersPage() {
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [accessOrg, setAccessOrg] = useState<string>(ORGS[1]);
+  const { data: access } = useFolderAccess();
+  const toggleFolder = useToggleFolderAccess();
+
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate({ to: "/documents", replace: true });
