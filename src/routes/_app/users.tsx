@@ -4,7 +4,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, PageHeader, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { ShieldCheck, Check } from "lucide-react";
+import { useFolderAccess, useToggleFolderAccess } from "@/hooks/use-folder-access";
+import { FOLDERS } from "@/lib/demo-data";
+import { ShieldCheck, Check, FolderOpen } from "lucide-react";
 
 export const Route = createFileRoute("/_app/users")({
   head: () => ({
