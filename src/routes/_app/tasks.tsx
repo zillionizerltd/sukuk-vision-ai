@@ -3,10 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useTasks } from "@/hooks/use-modules";
 import { useCommentCounts } from "@/hooks/use-comments";
-import { useCreateTask, useUpdateTaskStatus, useDeleteTask } from "@/hooks/use-tasks-mutations";
+import { useCreateTask, useUpdateTaskStatus, useDeleteTask, useUpdateTaskDueDate } from "@/hooks/use-tasks-mutations";
 import { CommentButton, CommentDrawer } from "@/components/collab/CommentDrawer";
 import { useAuth } from "@/hooks/use-auth";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, CalendarClock, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_app/tasks")({
   head: () => ({ meta: [{ title: "Tasks · Agrofeed Sukuk Data Room" }, { name: "description", content: "Task assignments and approvals across stakeholders." }] }),
@@ -26,6 +26,41 @@ const ORGS = ["Agrofeed Global", "Tesserant Capital", "Al Huda CIBE", "Sharia Su
 const inputCls =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function parseDue(due?: string | null) {
+  if (!due) return null;
+  const d = new Date(`${due}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Days until due: negative = overdue, 0 = today. */
+function daysUntil(due?: string | null) {
+  const d = parseDue(due);
+  if (!d) return null;
+  return Math.round((d.getTime() - startOfToday().getTime()) / 86400000);
+}
+
+function formatDue(due?: string | null) {
+  const d = parseDue(due);
+  if (!d) return "No due date";
+  return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function dueMeta(due: string | null | undefined, status: string) {
+  const diff = daysUntil(due);
+  if (diff === null) return { label: "No due date", tone: "neutral" as const, overdue: false };
+  if (status === "completed") return { label: formatDue(due), tone: "success" as const, overdue: false };
+  if (diff < 0) return { label: `Overdue by ${Math.abs(diff)}d`, tone: "danger" as const, overdue: true };
+  if (diff === 0) return { label: "Due today", tone: "warning" as const, overdue: false };
+  if (diff <= 7) return { label: `Due in ${diff}d`, tone: "warning" as const, overdue: false };
+  return { label: formatDue(due), tone: "info" as const, overdue: false };
+}
+
 function Tasks() {
   const { data: TASKS = [] } = useTasks();
   const { data: counts = {} } = useCommentCounts("task");
@@ -35,6 +70,7 @@ function Tasks() {
   const createTask = useCreateTask();
   const updateStatus = useUpdateTaskStatus();
   const deleteTask = useDeleteTask();
+  const updateDue = useUpdateTaskDueDate();
 
   const [active, setActive] = useState<{ id: string; title: string } | null>(null);
   const [showNew, setShowNew] = useState(false);
@@ -47,6 +83,10 @@ function Tasks() {
     status: "not_started",
   });
   const [error, setError] = useState<string | null>(null);
+
+  const overdueTasks = TASKS.filter(
+    (t) => t.status !== "completed" && (daysUntil(t.due) ?? 0) < 0,
+  );
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +113,19 @@ function Tasks() {
           ) : undefined
         }
       />
+
+      {overdueTasks.length > 0 && (
+        <Card className="mb-4 border-destructive/40">
+          <div className="flex items-center gap-2 text-sm">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <span className="font-semibold text-destructive">{overdueTasks.length} overdue task{overdueTasks.length > 1 ? "s" : ""}</span>
+            <span className="text-muted-foreground text-xs truncate">
+              {overdueTasks.slice(0, 3).map((t) => t.title).join(" · ")}
+              {overdueTasks.length > 3 ? " …" : ""}
+            </span>
+          </div>
+        </Card>
+      )}
 
       {showNew && canWrite && (
         <Card className="mb-4">
@@ -110,7 +163,10 @@ function Tasks() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {COLS.map((col) => {
-          const items = TASKS.filter((t) => t.status === col.key);
+          const items =
+            col.key === "overdue"
+              ? TASKS.filter((t) => t.status === "overdue" || ((t.status === "not_started" || t.status === "in_progress") && (daysUntil(t.due) ?? 0) < 0))
+              : TASKS.filter((t) => t.status === col.key && !((daysUntil(t.due) ?? 0) < 0));
           return (
             <Card key={col.key} className="!p-4">
               <div className="flex items-center justify-between mb-3">
@@ -139,10 +195,25 @@ function Tasks() {
                       <span>{t.org} · {t.assignee}</span>
                       <Pill tone={t.priority === "Critical" ? "danger" : t.priority === "High" ? "warning" : "info"}>{t.priority}</Pill>
                     </div>
-                    <div className="mt-1 flex items-center justify-between">
-                      <div className="text-[11px] text-muted-foreground tabular-nums">Due {t.due}</div>
+                    <div className="mt-1 flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1">
+                        <CalendarClock className="h-3 w-3 text-muted-foreground" />
+                        <Pill tone={dueMeta(t.due, t.status).tone}>{dueMeta(t.due, t.status).label}</Pill>
+                      </span>
                       <CommentButton count={counts[t.id] ?? 0} onClick={() => setActive({ id: t.id, title: t.title })} />
                     </div>
+                    {t.due && !dueMeta(t.due, t.status).overdue && (
+                      <div className="mt-1 text-[11px] text-muted-foreground tabular-nums">{formatDue(t.due)}</div>
+                    )}
+                    {canWrite && (
+                      <input
+                        type="date"
+                        aria-label="Task due date"
+                        className="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px]"
+                        value={t.due ?? ""}
+                        onChange={(e) => updateDue.mutate({ id: t.id, due_date: e.target.value })}
+                      />
+                    )}
                     {canWrite && (
                       <select
                         aria-label="Task status"
