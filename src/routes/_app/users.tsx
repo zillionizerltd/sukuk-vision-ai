@@ -23,6 +23,14 @@ export const Route = createFileRoute("/_app/users")({
 const ROLES = ["admin", "advisor", "auditor", "investor", "member"] as const;
 type Role = (typeof ROLES)[number];
 
+const ORGS = [
+  "Agrofeed Global",
+  "Tesserant Capital",
+  "Al Huda CIBE",
+  "Sharia Supervisory Board",
+  "External Legal Counsel",
+] as const;
+
 function UsersPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
@@ -65,13 +73,26 @@ function UsersPage() {
     }
   };
 
+  const changeOrg = async (userId: string, org: string) => {
+    setBusy(`${userId}:org`);
+    setMsg(null);
+    const { error } = await supabase.from("profiles").update({ org }).eq("id", userId);
+    setBusy(null);
+    if (error) setMsg(error.message);
+    else {
+      setMsg(`Organisation set to ${org}.`);
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    }
+  };
+
+
   if (loading || !isAdmin) return <div className="text-sm text-muted-foreground">Loading…</div>;
 
   return (
     <>
       <PageHeader
         title="User roles"
-        subtitle="Grant or revoke platform roles. Admins and advisors have full write access."
+        subtitle="Assign organisations and grant or revoke platform roles. Admins and advisors have full write access."
       />
 
       {msg && <div className="mb-4 text-xs text-muted-foreground">{msg}</div>}
@@ -98,7 +119,24 @@ function UsersPage() {
               {(data ?? []).map((u) => (
                 <tr key={u.id} className="border-b last:border-0">
                   <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
-                  <td className="py-2.5 pr-4 text-muted-foreground">{u.org || "—"}</td>
+                  <td className="py-2.5 pr-4">
+                    <select
+                      value={ORGS.includes((u.org ?? "") as (typeof ORGS)[number]) ? (u.org as string) : ""}
+                      onChange={(e) => changeOrg(u.id, e.target.value)}
+                      disabled={busy === `${u.id}:org`}
+                      aria-label={`Organisation for ${u.full_name || u.id}`}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
+                    >
+                      <option value="" disabled>
+                        {u.org || "— select —"}
+                      </option>
+                      {ORGS.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="py-2.5 pr-4">
                     <div className="flex flex-wrap gap-1">
                       {u.roles.length === 0 ? (
