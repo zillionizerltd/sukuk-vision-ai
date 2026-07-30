@@ -166,7 +166,7 @@ function Tasks() {
           const items =
             col.key === "overdue"
               ? TASKS.filter((t) => t.status === "overdue" || ((t.status === "not_started" || t.status === "in_progress") && (daysUntil(t.due) ?? 0) < 0))
-              : TASKS.filter((t) => t.status === col.key && !((daysUntil(t.due) ?? 0) < 0));
+              : TASKS.filter((t) => t.status === col.key && (t.status === "completed" || !((daysUntil(t.due) ?? 0) < 0)));
           return (
             <Card key={col.key} className="!p-4">
               <div className="flex items-center justify-between mb-3">
