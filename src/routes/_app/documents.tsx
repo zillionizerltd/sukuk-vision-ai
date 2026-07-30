@@ -189,7 +189,7 @@ function Documents() {
                 onChange={(e) => setUploadFolder(e.target.value)}
                 className="h-9 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {FOLDERS.map((f) => (
+                {visibleFolders.map((f) => (
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
@@ -299,7 +299,7 @@ function Documents() {
             <span className="ml-auto text-[10px] text-muted-foreground">{DOCUMENTS.length}</span>
           </button>
           <div className="mt-1 space-y-0.5">
-            {FOLDERS.map((f) => {
+            {visibleFolders.map((f) => {
               const count = DOCUMENTS.filter((d) => d.folder === f).length;
               return (
                 <button key={f} onClick={() => { setSelected(f); setUploadFolder(f); }}
