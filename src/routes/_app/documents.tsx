@@ -385,6 +385,9 @@ function Documents() {
           </Card>
         </div>
       </div>
+
+      {previewDoc && <DocumentPreviewModal doc={previewDoc} onClose={() => setPreviewDoc(null)} />}
     </>
+
   );
 }
