@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { FOLDERS } from "@/lib/demo-data";
 import { useDocuments } from "@/hooks/use-modules";
+import { useFolderAccess, allowedFolders } from "@/hooks/use-folder-access";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
