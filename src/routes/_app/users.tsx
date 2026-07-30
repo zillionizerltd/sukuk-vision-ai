@@ -73,6 +73,19 @@ function UsersPage() {
     }
   };
 
+  const changeOrg = async (userId: string, org: string) => {
+    setBusy(`${userId}:org`);
+    setMsg(null);
+    const { error } = await supabase.from("profiles").update({ org }).eq("id", userId);
+    setBusy(null);
+    if (error) setMsg(error.message);
+    else {
+      setMsg(`Organisation set to ${org}.`);
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    }
+  };
+
+
   if (loading || !isAdmin) return <div className="text-sm text-muted-foreground">Loading…</div>;
 
   return (
