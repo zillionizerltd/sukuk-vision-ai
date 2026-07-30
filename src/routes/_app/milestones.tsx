@@ -37,11 +37,12 @@ function Milestones() {
               <th className="text-left font-medium px-4 py-3">Due date</th>
               <th className="text-left font-medium px-4 py-3 w-56">Progress</th>
               <th className="text-left font-medium px-4 py-3">Status</th>
+              <th className="text-left font-medium px-4 py-3">Feedback</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {MILESTONES.map((m) => (
-              <tr key={m.id} className="hover:bg-secondary/40">
+              <tr key={m.uuid} className="hover:bg-secondary/40">
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{m.id}</td>
                 <td className="px-4 py-3 font-medium">{m.name}</td>
                 <td className="px-4 py-3 text-muted-foreground">{m.owner}</td>
@@ -57,11 +58,19 @@ function Milestones() {
                     {m.status.replace("_", " ")}
                   </Pill>
                 </td>
+                <td className="px-4 py-3">
+                  <CommentButton count={counts[m.uuid] ?? 0} onClick={() => setActive({ id: m.uuid, title: m.name })} />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </Card>
+
+      {active && (
+        <CommentDrawer itemType="milestone" itemId={active.id} title={active.title} onClose={() => setActive(null)} />
+      )}
     </>
   );
+
 }
