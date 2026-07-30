@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Bell, Search, Sparkles, HelpCircle, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
+import { Search, Sparkles, HelpCircle, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth, signOut } from "@/hooks/use-auth";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 function initials(name: string | null | undefined, email: string | null | undefined) {
   const source = (name && name.trim()) || email || "";
@@ -56,10 +57,7 @@ export function TopBar() {
             <Sparkles className="h-4 w-4" />
             AI Advisor
           </Link>
-          <button className="relative h-10 w-10 inline-flex items-center justify-center rounded-lg hover:bg-secondary transition" aria-label="Notifications">
-            <Bell className="h-5 w-5 text-muted-foreground" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-gold ring-2 ring-background" />
-          </button>
+          <NotificationBell />
           <button className="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-secondary transition" aria-label="Help">
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
           </button>
