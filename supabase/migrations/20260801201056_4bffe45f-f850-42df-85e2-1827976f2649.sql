@@ -1,0 +1,3 @@
+CREATE POLICY tasks_insert_any_auth ON public.tasks FOR INSERT TO authenticated WITH CHECK (created_by = auth.uid() OR public.can_write(auth.uid()));
+CREATE POLICY tasks_update_own ON public.tasks FOR UPDATE TO authenticated USING (created_by = auth.uid()) WITH CHECK (created_by = auth.uid());
+CREATE POLICY tasks_delete_own ON public.tasks FOR DELETE TO authenticated USING (created_by = auth.uid());
