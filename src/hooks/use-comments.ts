@@ -58,7 +58,13 @@ export function useCommentCounts(itemType: ItemType) {
 export function useAddComment(itemType: ItemType, itemId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { body: string; authorId: string; authorName: string; authorOrg: string }) => {
+    mutationFn: async (vars: {
+      body: string;
+      authorId: string;
+      authorName: string;
+      authorOrg: string;
+      parentId?: string | null;
+    }) => {
       const body = vars.body.trim();
       if (!body) throw new Error("Comment cannot be empty");
       if (body.length > 2000) throw new Error("Comment must be under 2000 characters");
@@ -69,7 +75,9 @@ export function useAddComment(itemType: ItemType, itemId?: string) {
         author_id: vars.authorId,
         author_name: vars.authorName,
         author_org: vars.authorOrg,
+        parent_id: vars.parentId ?? null,
       });
+
       if (error) throw error;
     },
     onSuccess: () => {
