@@ -1,0 +1,2 @@
+ALTER TABLE public.item_comments DROP CONSTRAINT IF EXISTS item_comments_item_type_check;
+ALTER TABLE public.item_comments ADD CONSTRAINT item_comments_item_type_check CHECK (item_type IN ('milestone','task','document'));
