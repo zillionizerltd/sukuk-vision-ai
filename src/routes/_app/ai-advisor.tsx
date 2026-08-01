@@ -15,6 +15,8 @@ import {
   useFinancialMetrics,
 } from "@/hooks/use-modules";
 import { AdvisorActionCard } from "@/components/collab/AdvisorActionCard";
+import { ChatMarkdown } from "@/components/collab/ChatMarkdown";
+
 import type { AdvisorAction } from "@/hooks/use-advisor-actions";
 
 export const Route = createFileRoute("/_app/ai-advisor")({
@@ -89,13 +91,15 @@ function Advisor() {
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        api: "/api/chat",
+        // Respect the deployment base path (e.g. /dataroom/) so the request is not sent to the wrong origin path.
+        api: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/chat`,
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: { ...body, messages, context: contextRef.current },
         }),
       }),
     [],
   );
+
 
   const { messages, sendMessage, status, error, regenerate } = useChat({ transport });
   const busy = status === "submitted" || status === "streaming";
@@ -177,11 +181,14 @@ function Advisor() {
                 <div className="flex-1 space-y-3">
                   {(text || (!actions.length && !pendingActions)) && (
                     <Card>
-                      <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed">
-                        {text || <span className="text-muted-foreground">Thinking…</span>}
-                      </div>
+                      {text ? (
+                        <ChatMarkdown>{text}</ChatMarkdown>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Thinking…</span>
+                      )}
                     </Card>
                   )}
+
                   {pendingActions && !actions.length && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing an action…
