@@ -11,7 +11,7 @@ export function PdfCanvasViewer({ src, className }: { src: string; className?: s
 
   useEffect(() => {
     let cancelled = false;
-    let doc: { destroy: () => void } | null = null;
+    let doc: Awaited<ReturnType<typeof import("pdfjs-dist").getDocument>["promise"]> | null = null;
 
     (async () => {
       try {
@@ -21,7 +21,7 @@ export function PdfCanvasViewer({ src, className }: { src: string; className?: s
 
         const loaded = await pdfjs.getDocument({ url: src }).promise;
         if (cancelled) {
-          loaded.destroy();
+          void loaded.cleanup();
           return;
         }
         doc = loaded;
@@ -55,7 +55,7 @@ export function PdfCanvasViewer({ src, className }: { src: string; className?: s
 
     return () => {
       cancelled = true;
-      doc?.destroy();
+      void doc?.cleanup();
     };
   }, [src]);
 
