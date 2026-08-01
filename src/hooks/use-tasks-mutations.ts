@@ -16,8 +16,10 @@ export function useCreateTask() {
     mutationFn: async (t: NewTask) => {
       const title = t.title.trim();
       if (!title) throw new Error("Title is required");
+      const { data: auth } = await supabase.auth.getUser();
       const { error } = await supabase.from("tasks").insert({
         title,
+        created_by: auth.user?.id ?? null,
         org: t.org || null,
         assignee: t.assignee || null,
         due_date: t.due_date || null,
