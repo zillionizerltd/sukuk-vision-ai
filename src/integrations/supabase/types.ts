@@ -204,6 +204,7 @@ export type Database = {
           id: string
           item_id: string
           item_type: string
+          parent_id: string | null
           updated_at: string
         }
         Insert: {
@@ -215,6 +216,7 @@ export type Database = {
           id?: string
           item_id: string
           item_type: string
+          parent_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -226,9 +228,18 @@ export type Database = {
           id?: string
           item_id?: string
           item_type?: string
+          parent_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "item_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "item_comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       milestones: {
         Row: {
