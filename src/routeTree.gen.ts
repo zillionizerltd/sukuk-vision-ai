@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PptxtestRouteImport } from './routes/pptxtest'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ import { Route as AppComplianceRouteImport } from './routes/_app/compliance'
 import { Route as AppAuditTrailRouteImport } from './routes/_app/audit-trail'
 import { Route as AppAiAdvisorRouteImport } from './routes/_app/ai-advisor'
 
+const PptxtestRoute = PptxtestRouteImport.update({
+  id: '/pptxtest',
+  path: '/pptxtest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -127,6 +133,7 @@ const AppAiAdvisorRoute = AppAiAdvisorRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/pptxtest': typeof PptxtestRoute
   '/ai-advisor': typeof AppAiAdvisorRoute
   '/audit-trail': typeof AppAuditTrailRoute
   '/compliance': typeof AppComplianceRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/pptxtest': typeof PptxtestRoute
   '/ai-advisor': typeof AppAiAdvisorRoute
   '/audit-trail': typeof AppAuditTrailRoute
   '/compliance': typeof AppComplianceRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/pptxtest': typeof PptxtestRoute
   '/_app/ai-advisor': typeof AppAiAdvisorRoute
   '/_app/audit-trail': typeof AppAuditTrailRoute
   '/_app/compliance': typeof AppComplianceRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/pptxtest'
     | '/ai-advisor'
     | '/audit-trail'
     | '/compliance'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/pptxtest'
     | '/ai-advisor'
     | '/audit-trail'
     | '/compliance'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/login'
+    | '/pptxtest'
     | '/_app/ai-advisor'
     | '/_app/audit-trail'
     | '/_app/compliance'
@@ -254,11 +266,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PptxtestRoute: typeof PptxtestRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pptxtest': {
+      id: '/pptxtest'
+      path: '/pptxtest'
+      fullPath: '/pptxtest'
+      preLoaderRoute: typeof PptxtestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -437,6 +457,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  PptxtestRoute: PptxtestRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
