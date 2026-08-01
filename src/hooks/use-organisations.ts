@@ -78,7 +78,7 @@ export function useUpdateOrganisation() {
       name?: string;
       partner_access?: boolean;
     }) => {
-      const patch: Record<string, unknown> = {};
+      const patch: { name?: string; slug?: string; partner_access?: boolean } = {};
       if (typeof name === "string") {
         const clean = name.trim();
         if (!clean) throw new Error("Organisation name is required.");
