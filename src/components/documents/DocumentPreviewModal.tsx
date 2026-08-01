@@ -17,6 +17,7 @@ export type PreviewDoc = {
 export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClose: () => void }) {
   const { user, profile } = useAuth();
   const [url, setUrl] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [mime, setMime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,8 +30,12 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
 
   useEffect(() => {
     let active = true;
+    let createdUrl: string | null = null;
     (async () => {
       setLoading(true);
+      setError(null);
+      setUrl(null);
+      setBlobUrl(null);
       const { data: row, error: rowErr } = await supabase
         .from("documents")
         .select("storage_path, mime_type")
@@ -46,17 +51,36 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
         .from("documents")
         .createSignedUrl(row.storage_path, 300);
       if (!active) return;
-      if (signErr || !data) setError(signErr?.message ?? "Cannot generate preview link.");
-      else {
-        setUrl(data.signedUrl);
-        setMime(row.mime_type);
+      if (signErr || !data) {
+        setError(signErr?.message ?? "Cannot generate preview link.");
+        setLoading(false);
+        return;
+      }
+      setUrl(data.signedUrl);
+      setMime(row.mime_type);
+      // Fetch as a blob so the viewer works inside sandboxed/nested preview frames.
+      try {
+        const res = await fetch(data.signedUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        if (!active) return;
+        createdUrl = URL.createObjectURL(
+          row.mime_type ? new Blob([blob], { type: row.mime_type }) : blob,
+        );
+        setBlobUrl(createdUrl);
+      } catch (e) {
+        if (!active) return;
+        // Signed URL still works as a fallback target.
+        console.warn("Preview blob fetch failed", e);
       }
       setLoading(false);
     })();
     return () => {
       active = false;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
   }, [doc.id]);
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
