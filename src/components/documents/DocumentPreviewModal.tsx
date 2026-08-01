@@ -209,26 +209,20 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
                 {!loadingComments && comments.length === 0 && (
                   <div className="text-xs text-muted-foreground">No comments yet on this document.</div>
                 )}
-                {comments.map((c) => (
-                  <div key={c.id} className="rounded-lg border border-input bg-background p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="truncate text-xs font-medium">{c.author_name}</span>
-                        {c.author_org && <Pill tone="info">{c.author_org}</Pill>}
-                      </div>
-                      {c.author_id === user?.id && (
-                        <button
-                          onClick={() => del.mutate(c.id)}
-                          aria-label="Delete comment"
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-snug">{c.body}</p>
-                    <div className="mt-2 text-[10px] tabular-nums text-muted-foreground">{c.created_at}</div>
-                  </div>
+                {roots.map((c) => (
+                  <CommentNode
+                    key={c.id}
+                    comment={c}
+                    replies={repliesOf(c.id)}
+                    userId={user?.id}
+                    onDelete={(id) => del.mutate(id)}
+                    onReply={setReplyTo}
+                    replyTo={replyTo}
+                    replyBody={replyBody}
+                    setReplyBody={setReplyBody}
+                    onSubmitReply={submitReply}
+                    pending={add.isPending}
+                  />
                 ))}
               </div>
               <div className="space-y-2 border-t p-3">
@@ -254,6 +248,7 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
               </div>
             </aside>
           )}
+
         </div>
       </div>
     </div>
