@@ -5,6 +5,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAddComment, useComments, useDeleteComment, type CommentRow } from "@/hooks/use-comments";
 import { Download, Loader2, MessageSquare, Reply, Trash2, X, ExternalLink } from "lucide-react";
 import { PdfCanvasViewer } from "./PdfCanvasViewer";
+import { DocxViewer } from "./DocxViewer";
+import { SheetViewer } from "./SheetViewer";
+import { PptxViewer } from "./PptxViewer";
+
 
 export type PreviewDoc = {
   id: string;
