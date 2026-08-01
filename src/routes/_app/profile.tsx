@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, PageHeader, Button, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/hooks/use-auth";
+import { RoleDescription } from "@/components/admin/RoleDefinitionsPanel";
 import { LogOut, User as UserIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_app/profile")({
@@ -114,12 +115,18 @@ function ProfilePage() {
           </p>
 
           <h3 className="font-semibold mt-6 mb-3">Roles</h3>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="space-y-3">
             {roles.length === 0 ? (
-              <Pill tone="neutral">member</Pill>
+              <div>
+                <Pill tone="neutral">member</Pill>
+                <RoleDescription role="member" />
+              </div>
             ) : (
               roles.map((r) => (
-                <Pill key={r} tone={r === "admin" ? "gold" : "info"}>{r}</Pill>
+                <div key={r}>
+                  <Pill tone={r === "admin" ? "gold" : "info"}>{r}</Pill>
+                  <RoleDescription role={r} />
+                </div>
               ))
             )}
           </div>

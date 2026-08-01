@@ -11,6 +11,7 @@ import {
   useUpdateOrganisation,
   useDeleteOrganisation,
 } from "@/hooks/use-organisations";
+import { RoleDefinitionsPanel } from "@/components/admin/RoleDefinitionsPanel";
 import { FOLDERS } from "@/lib/demo-data";
 import { ShieldCheck, Check, FolderOpen, Building2, Plus, Trash2 } from "lucide-react";
 
@@ -189,6 +190,10 @@ function UsersPage() {
           </table>
         )}
       </Card>
+
+      <div className="mt-6">
+        <RoleDefinitionsPanel />
+      </div>
 
       <Card className="mt-6">
         <h3 className="font-semibold flex items-center gap-2 mb-2">
