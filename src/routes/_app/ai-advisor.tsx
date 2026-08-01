@@ -15,6 +15,8 @@ import {
   useFinancialMetrics,
 } from "@/hooks/use-modules";
 import { AdvisorActionCard } from "@/components/collab/AdvisorActionCard";
+import { ChatMarkdown } from "@/components/collab/ChatMarkdown";
+
 import type { AdvisorAction } from "@/hooks/use-advisor-actions";
 
 export const Route = createFileRoute("/_app/ai-advisor")({
