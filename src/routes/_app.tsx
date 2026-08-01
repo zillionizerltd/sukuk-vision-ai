@@ -19,7 +19,7 @@ const PARTNER_ORGS = ["al huda cibe", "tesserant capital", "tesserant"];
 const PARTNER_ALLOWED = ["/milestones", "/tasks"];
 
 function AppLayout() {
-  const { profile, loading } = useAuth();
+  const { profile, loading, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,7 +28,8 @@ function AppLayout() {
     const org = (profile.org ?? "").toLowerCase();
     const isAgrofeed = org === "agrofeed global";
     const isPartner = PARTNER_ORGS.some((o) => org.includes(o));
-    if (isAgrofeed) return;
+    if (isAdmin || isAgrofeed) return;
+
     const blocked = AGROFEED_ONLY.filter(
       (p) => !(isPartner && PARTNER_ALLOWED.includes(p)),
     );
