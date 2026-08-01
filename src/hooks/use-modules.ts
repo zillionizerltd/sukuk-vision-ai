@@ -78,6 +78,7 @@ export type TaskRow = {
   due: string;
   priority: string;
   status: string;
+  created_by: string | null;
 };
 export function useTasks() {
   return useQuery({
@@ -93,6 +94,7 @@ export function useTasks() {
         due: t.due_date ?? "",
         priority: t.priority,
         status: t.status,
+        created_by: t.created_by ?? null,
       }));
     },
   });

@@ -64,8 +64,9 @@ function dueMeta(due: string | null | undefined, status: string) {
 function Tasks() {
   const { data: TASKS = [] } = useTasks();
   const { data: counts = {} } = useCommentCounts("task");
-  const { roles, profile } = useAuth();
+  const { roles, profile, user } = useAuth();
   const canWrite = roles.includes("admin") || roles.includes("advisor");
+  const canEdit = (t: { created_by: string | null }) => canWrite || (!!user && t.created_by === user.id);
 
   const createTask = useCreateTask();
   const updateStatus = useUpdateTaskStatus();
@@ -107,11 +108,9 @@ function Tasks() {
         title="Tasks"
         subtitle="Cross-organisation workflow across Agrofeed, Tesserant, and Al Huda."
         actions={
-          canWrite ? (
-            <Button size="sm" onClick={() => setShowNew((s) => !s)}>
-              <Plus className="h-3.5 w-3.5" />New task
-            </Button>
-          ) : undefined
+          <Button size="sm" onClick={() => setShowNew((s) => !s)}>
+            <Plus className="h-3.5 w-3.5" />New task
+          </Button>
         }
       />
 
@@ -128,7 +127,7 @@ function Tasks() {
         </Card>
       )}
 
-      {showNew && canWrite && (
+      {showNew && (
         <Card className="mb-4">
           <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-3 flex items-center justify-between">
@@ -181,7 +180,7 @@ function Tasks() {
                   <div key={t.id} className="rounded-lg border border-input bg-background p-3 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between gap-2">
                       <div className="text-sm font-medium leading-snug">{t.title}</div>
-                      {canWrite && (
+                      {canEdit(t) && (
                         <button
                           type="button"
                           aria-label="Delete task"
@@ -206,7 +205,7 @@ function Tasks() {
                     {t.due && !dueMeta(t.due, t.status).overdue && (
                       <div className="mt-1 text-[11px] text-muted-foreground tabular-nums">{formatDue(t.due)}</div>
                     )}
-                    {canWrite && (
+                    {canEdit(t) && (
                       <input
                         type="date"
                         aria-label="Task due date"
@@ -215,7 +214,7 @@ function Tasks() {
                         onChange={(e) => updateDue.mutate({ id: t.id, due_date: e.target.value })}
                       />
                     )}
-                    {canWrite && (
+                    {canEdit(t) && (
                       <select
                         aria-label="Task status"
                         className="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px]"
