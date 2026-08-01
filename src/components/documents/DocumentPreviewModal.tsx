@@ -17,6 +17,7 @@ export type PreviewDoc = {
 export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClose: () => void }) {
   const { user, profile } = useAuth();
   const [url, setUrl] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [mime, setMime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,8 +30,12 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
 
   useEffect(() => {
     let active = true;
+    let createdUrl: string | null = null;
     (async () => {
       setLoading(true);
+      setError(null);
+      setUrl(null);
+      setBlobUrl(null);
       const { data: row, error: rowErr } = await supabase
         .from("documents")
         .select("storage_path, mime_type")
@@ -46,17 +51,36 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
         .from("documents")
         .createSignedUrl(row.storage_path, 300);
       if (!active) return;
-      if (signErr || !data) setError(signErr?.message ?? "Cannot generate preview link.");
-      else {
-        setUrl(data.signedUrl);
-        setMime(row.mime_type);
+      if (signErr || !data) {
+        setError(signErr?.message ?? "Cannot generate preview link.");
+        setLoading(false);
+        return;
+      }
+      setUrl(data.signedUrl);
+      setMime(row.mime_type);
+      // Fetch as a blob so the viewer works inside sandboxed/nested preview frames.
+      try {
+        const res = await fetch(data.signedUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        if (!active) return;
+        createdUrl = URL.createObjectURL(
+          row.mime_type ? new Blob([blob], { type: row.mime_type }) : blob,
+        );
+        setBlobUrl(createdUrl);
+      } catch (e) {
+        if (!active) return;
+        // Signed URL still works as a fallback target.
+        console.warn("Preview blob fetch failed", e);
       }
       setLoading(false);
     })();
     return () => {
       active = false;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
   }, [doc.id]);
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -65,22 +89,27 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
   }, [onClose]);
 
   const download = async () => {
-    if (!url) return;
     try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
+      let objUrl = blobUrl;
+      let revoke = false;
+      if (!objUrl) {
+        if (!url) return;
+        const res = await fetch(url);
+        objUrl = URL.createObjectURL(await res.blob());
+        revoke = true;
+      }
       const a = document.createElement("a");
       a.href = objUrl;
       a.download = doc.name;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+      if (revoke) setTimeout(() => URL.revokeObjectURL(objUrl!), 1000);
     } catch (e) {
       setError(`Download failed: ${(e as Error).message}`);
     }
   };
+
 
   const submit = () => {
     if (!user || !body.trim()) return;
@@ -147,16 +176,33 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
                 {error}
               </div>
             )}
-            {!loading && !error && url && (
+            {!loading && !error && (blobUrl || url) && (
               isImage ? (
-                <img src={url} alt={doc.name} className="max-h-full max-w-full object-contain" />
+                <img src={blobUrl ?? url!} alt={doc.name} className="max-h-full max-w-full object-contain" />
               ) : isPdf ? (
-                <iframe title={doc.name} src={url} className="h-full w-full border-0 bg-background" />
+                <object
+                  data={blobUrl ?? url!}
+                  type="application/pdf"
+                  title={doc.name}
+                  className="h-full w-full bg-background"
+                >
+                  <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-xs text-muted-foreground">
+                    <p>Your browser blocked the inline PDF viewer.</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => window.open(blobUrl ?? url!, "_blank", "noopener,noreferrer")}>
+                        <ExternalLink className="h-3.5 w-3.5" /> Open in new tab
+                      </Button>
+                      <Button size="sm" onClick={download}>
+                        <Download className="h-3.5 w-3.5" /> Download
+                      </Button>
+                    </div>
+                  </div>
+                </object>
               ) : (
                 <div className="flex flex-col items-center gap-3 text-center text-xs text-muted-foreground">
                   <p>Inline preview isn’t available for this file type.</p>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => window.open(url, "_blank", "noopener,noreferrer")}>
+                    <Button size="sm" variant="secondary" onClick={() => window.open(blobUrl ?? url!, "_blank", "noopener,noreferrer")}>
                       <ExternalLink className="h-3.5 w-3.5" /> Open in new tab
                     </Button>
                     <Button size="sm" onClick={download}>
@@ -166,6 +212,7 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
                 </div>
               )
             )}
+
           </div>
 
           {showComments && (
