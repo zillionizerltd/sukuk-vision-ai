@@ -25,23 +25,26 @@ export const Route = createFileRoute("/_app/users")({
 const ROLES = ["admin", "advisor", "auditor", "investor", "member"] as const;
 type Role = (typeof ROLES)[number];
 
-const ORGS = [
-  "Agrofeed Global",
-  "Tesserant Capital",
-  "Al Huda CIBE",
-  "Sharia Supervisory Board",
-  "External Legal Counsel",
-] as const;
-
 function UsersPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [accessOrg, setAccessOrg] = useState<string>(ORGS[1]);
+  const { data: orgs } = useOrganisations();
+  const ORGS = (orgs ?? []).map((o) => o.name);
+  const [accessOrg, setAccessOrg] = useState<string>("");
+  const [newOrg, setNewOrg] = useState("");
+  const [newOrgPartner, setNewOrgPartner] = useState(false);
+  const createOrg = useCreateOrganisation();
+  const updateOrg = useUpdateOrganisation();
+  const deleteOrg = useDeleteOrganisation();
   const { data: access } = useFolderAccess();
   const toggleFolder = useToggleFolderAccess();
+
+  const accessOrgs = ORGS.filter((o) => o.toLowerCase() !== "agrofeed global");
+  const selectedAccessOrg = accessOrg || accessOrgs[0] || "";
+
 
 
   useEffect(() => {
