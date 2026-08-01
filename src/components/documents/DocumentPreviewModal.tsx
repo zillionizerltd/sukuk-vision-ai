@@ -44,6 +44,8 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
     (async () => {
       setLoading(true);
       setError(null);
+      setViewerError(null);
+
       setUrl(null);
       setBlobUrl(null);
       const { data: row, error: rowErr } = await supabase
