@@ -20,12 +20,15 @@ export function PptxViewer({
   onError?: (message: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const runRef = useRef(0);
   const [loading, setLoading] = useState(true);
   const [empty, setEmpty] = useState(false);
 
   useEffect(() => {
+    const run = (runRef.current += 1);
     let cancelled = false;
     let previewer: Previewer | null = null;
+    const stale = () => cancelled || runRef.current !== run;
     (async () => {
       setLoading(true);
       setEmpty(false);
@@ -33,7 +36,7 @@ export function PptxViewer({
         const { init } = await import("pptx-preview");
         const buffer = await (await fetch(src)).arrayBuffer();
         const container = containerRef.current;
-        if (cancelled || !container) return;
+        if (stale() || !container) return;
         container.innerHTML = "";
         const width = Math.max(640, container.clientWidth - 32);
         previewer = init(container, {
@@ -42,12 +45,15 @@ export function PptxViewer({
           mode: "list",
         }) as unknown as Previewer;
         await previewer.preview(buffer);
-        if (cancelled) return;
+        if (stale()) return;
 
         // In "list" mode the library only parses the deck — each slide has to be
         // rendered explicitly, otherwise the wrapper stays empty (and black).
         const count = previewer.slideCount ?? 0;
+        const target = previewer.wrapper ?? container.querySelector<HTMLElement>(".pptx-preview-wrapper");
+        if (target) target.innerHTML = "";
         for (let i = 0; i < count; i += 1) {
+          if (stale()) return;
           try {
             previewer.htmlRender.renderSlide(i);
           } catch {
@@ -74,9 +80,9 @@ export function PptxViewer({
         }
         if (!wrapper || wrapper.children.length === 0) setEmpty(true);
       } catch (e) {
-        if (!cancelled) onError?.((e as Error).message || "Failed to render presentation");
+        if (!stale()) onError?.((e as Error).message || "Failed to render presentation");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!stale()) setLoading(false);
       }
     })();
     return () => {
