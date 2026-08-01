@@ -24,6 +24,9 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [body, setBody] = useState("");
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState("");
+
 
   const { data: comments = [], isLoading: loadingComments } = useComments("document", doc.id);
   const add = useAddComment("document", doc.id);
