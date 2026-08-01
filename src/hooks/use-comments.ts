@@ -10,6 +10,7 @@ export type CommentRow = {
   author_name: string;
   author_org: string;
   created_at: string;
+  parent_id: string | null;
 };
 
 export function useComments(itemType: ItemType, itemId?: string) {
@@ -19,7 +20,7 @@ export function useComments(itemType: ItemType, itemId?: string) {
     queryFn: async (): Promise<CommentRow[]> => {
       const { data, error } = await supabase
         .from("item_comments")
-        .select("id, body, author_id, author_name, author_org, created_at")
+        .select("id, body, author_id, author_name, author_org, created_at, parent_id")
         .eq("item_type", itemType)
         .eq("item_id", itemId!)
         .order("created_at", { ascending: true });
@@ -31,10 +32,12 @@ export function useComments(itemType: ItemType, itemId?: string) {
         author_name: c.author_name ?? "Member",
         author_org: c.author_org ?? "",
         created_at: (c.created_at ?? "").replace("T", " ").slice(0, 16),
+        parent_id: c.parent_id ?? null,
       }));
     },
   });
 }
+
 
 export function useCommentCounts(itemType: ItemType) {
   return useQuery({
@@ -55,7 +58,13 @@ export function useCommentCounts(itemType: ItemType) {
 export function useAddComment(itemType: ItemType, itemId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { body: string; authorId: string; authorName: string; authorOrg: string }) => {
+    mutationFn: async (vars: {
+      body: string;
+      authorId: string;
+      authorName: string;
+      authorOrg: string;
+      parentId?: string | null;
+    }) => {
       const body = vars.body.trim();
       if (!body) throw new Error("Comment cannot be empty");
       if (body.length > 2000) throw new Error("Comment must be under 2000 characters");
@@ -66,7 +75,9 @@ export function useAddComment(itemType: ItemType, itemId?: string) {
         author_id: vars.authorId,
         author_name: vars.authorName,
         author_org: vars.authorOrg,
+        parent_id: vars.parentId ?? null,
       });
+
       if (error) throw error;
     },
     onSuccess: () => {

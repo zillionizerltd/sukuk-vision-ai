@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Button, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useAddComment, useComments, useDeleteComment } from "@/hooks/use-comments";
-import { Download, Loader2, MessageSquare, Trash2, X, ExternalLink } from "lucide-react";
+import { useAddComment, useComments, useDeleteComment, type CommentRow } from "@/hooks/use-comments";
+import { Download, Loader2, MessageSquare, Reply, Trash2, X, ExternalLink } from "lucide-react";
 import { PdfCanvasViewer } from "./PdfCanvasViewer";
 
 export type PreviewDoc = {
@@ -24,6 +24,9 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [body, setBody] = useState("");
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState("");
+
 
   const { data: comments = [], isLoading: loadingComments } = useComments("document", doc.id);
   const add = useAddComment("document", doc.id);
@@ -120,10 +123,37 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
         authorId: user.id,
         authorName: profile?.full_name || user.email || "Member",
         authorOrg: profile?.org || "",
+        parentId: null,
       },
       { onSuccess: () => setBody("") },
     );
   };
+
+  const submitReply = (parentId: string) => {
+    if (!user || !replyBody.trim()) return;
+    add.mutate(
+      {
+        body: replyBody,
+        authorId: user.id,
+        authorName: profile?.full_name || user.email || "Member",
+        authorOrg: profile?.org || "",
+        parentId,
+      },
+      {
+        onSuccess: () => {
+          setReplyBody("");
+          setReplyTo(null);
+        },
+      },
+    );
+  };
+
+  const roots = comments.filter((c) => !c.parent_id);
+  const repliesOf = (id: string) =>
+    comments
+      .filter((c) => c.parent_id === id)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+
 
   const isImage = (mime ?? "").startsWith("image/");
   const isPdf = (mime ?? "").includes("pdf") || doc.name.toLowerCase().endsWith(".pdf");
@@ -209,26 +239,20 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
                 {!loadingComments && comments.length === 0 && (
                   <div className="text-xs text-muted-foreground">No comments yet on this document.</div>
                 )}
-                {comments.map((c) => (
-                  <div key={c.id} className="rounded-lg border border-input bg-background p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="truncate text-xs font-medium">{c.author_name}</span>
-                        {c.author_org && <Pill tone="info">{c.author_org}</Pill>}
-                      </div>
-                      {c.author_id === user?.id && (
-                        <button
-                          onClick={() => del.mutate(c.id)}
-                          aria-label="Delete comment"
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-snug">{c.body}</p>
-                    <div className="mt-2 text-[10px] tabular-nums text-muted-foreground">{c.created_at}</div>
-                  </div>
+                {roots.map((c) => (
+                  <CommentNode
+                    key={c.id}
+                    comment={c}
+                    replies={repliesOf(c.id)}
+                    userId={user?.id}
+                    onDelete={(id) => del.mutate(id)}
+                    onReply={setReplyTo}
+                    replyTo={replyTo}
+                    replyBody={replyBody}
+                    setReplyBody={setReplyBody}
+                    onSubmitReply={submitReply}
+                    pending={add.isPending}
+                  />
                 ))}
               </div>
               <div className="space-y-2 border-t p-3">
@@ -254,8 +278,117 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
               </div>
             </aside>
           )}
+
         </div>
       </div>
+    </div>
+  );
+}
+
+function CommentBubble({
+  comment,
+  userId,
+  onDelete,
+}: {
+  comment: CommentRow;
+  userId?: string;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-xs font-medium">{comment.author_name}</span>
+          {comment.author_org && <Pill tone="info">{comment.author_org}</Pill>}
+        </div>
+        {comment.author_id === userId && (
+          <button
+            onClick={() => onDelete(comment.id)}
+            aria-label="Delete comment"
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <p className="mt-2 whitespace-pre-wrap text-sm leading-snug">{comment.body}</p>
+      <div className="mt-2 text-[10px] tabular-nums text-muted-foreground">{comment.created_at}</div>
+    </>
+  );
+}
+
+function CommentNode({
+  comment,
+  replies,
+  userId,
+  onDelete,
+  onReply,
+  replyTo,
+  replyBody,
+  setReplyBody,
+  onSubmitReply,
+  pending,
+}: {
+  comment: CommentRow;
+  replies: CommentRow[];
+  userId?: string;
+  onDelete: (id: string) => void;
+  onReply: (id: string | null) => void;
+  replyTo: string | null;
+  replyBody: string;
+  setReplyBody: (v: string) => void;
+  onSubmitReply: (parentId: string) => void;
+  pending: boolean;
+}) {
+  const open = replyTo === comment.id;
+  return (
+    <div className="rounded-lg border border-input bg-background p-3">
+      <CommentBubble comment={comment} userId={userId} onDelete={onDelete} />
+
+      {replies.length > 0 && (
+        <div className="mt-3 space-y-2 border-l-2 border-border pl-3">
+          {replies.map((r) => (
+            <div key={r.id} className="rounded-md bg-secondary/40 p-2">
+              <CommentBubble comment={r} userId={userId} onDelete={onDelete} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-2 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => onReply(open ? null : comment.id)}
+          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+        >
+          <Reply className="h-3 w-3" />
+          {open ? "Cancel" : "Reply"}
+        </button>
+        {replies.length > 0 && (
+          <span className="text-[10px] text-muted-foreground tabular-nums">
+            {replies.length} {replies.length === 1 ? "reply" : "replies"}
+          </span>
+        )}
+      </div>
+
+      {open && (
+        <div className="mt-2 space-y-2">
+          <textarea
+            value={replyBody}
+            maxLength={2000}
+            rows={2}
+            autoFocus
+            onChange={(e) => setReplyBody(e.target.value)}
+            placeholder={`Reply to ${comment.author_name}…`}
+            className="w-full resize-none rounded-md border border-input bg-background p-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => onSubmitReply(comment.id)} disabled={!replyBody.trim() || pending}>
+              {pending ? "Posting…" : "Post reply"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
