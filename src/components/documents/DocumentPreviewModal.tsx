@@ -120,10 +120,37 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
         authorId: user.id,
         authorName: profile?.full_name || user.email || "Member",
         authorOrg: profile?.org || "",
+        parentId: null,
       },
       { onSuccess: () => setBody("") },
     );
   };
+
+  const submitReply = (parentId: string) => {
+    if (!user || !replyBody.trim()) return;
+    add.mutate(
+      {
+        body: replyBody,
+        authorId: user.id,
+        authorName: profile?.full_name || user.email || "Member",
+        authorOrg: profile?.org || "",
+        parentId,
+      },
+      {
+        onSuccess: () => {
+          setReplyBody("");
+          setReplyTo(null);
+        },
+      },
+    );
+  };
+
+  const roots = comments.filter((c) => !c.parent_id);
+  const repliesOf = (id: string) =>
+    comments
+      .filter((c) => c.parent_id === id)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+
 
   const isImage = (mime ?? "").startsWith("image/");
   const isPdf = (mime ?? "").includes("pdf") || doc.name.toLowerCase().endsWith(".pdf");
