@@ -155,8 +155,26 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
       .sort((a, b) => a.created_at.localeCompare(b.created_at));
 
 
-  const isImage = (mime ?? "").startsWith("image/");
-  const isPdf = (mime ?? "").includes("pdf") || doc.name.toLowerCase().endsWith(".pdf");
+  const ext = doc.name.toLowerCase().split(".").pop() ?? "";
+  const m = mime ?? "";
+  const kind: "image" | "pdf" | "docx" | "sheet" | "pptx" | "legacy" | "unsupported" =
+    m.startsWith("image/")
+      ? "image"
+      : m.includes("pdf") || ext === "pdf"
+        ? "pdf"
+        : m.includes("wordprocessingml") || ext === "docx"
+          ? "docx"
+          : m.includes("spreadsheetml") ||
+              m.includes("ms-excel") ||
+              m === "text/csv" ||
+              ["xlsx", "xls", "csv"].includes(ext)
+            ? "sheet"
+            : m.includes("presentationml") || ext === "pptx"
+              ? "pptx"
+              : ["doc", "ppt", "xlt"].includes(ext)
+                ? "legacy"
+                : "unsupported";
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
