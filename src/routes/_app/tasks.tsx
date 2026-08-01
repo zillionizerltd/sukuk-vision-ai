@@ -6,6 +6,7 @@ import { useCommentCounts } from "@/hooks/use-comments";
 import { useCreateTask, useUpdateTaskStatus, useDeleteTask, useUpdateTaskDueDate } from "@/hooks/use-tasks-mutations";
 import { CommentButton, CommentDrawer } from "@/components/collab/CommentDrawer";
 import { useAuth } from "@/hooks/use-auth";
+import { useOrgNames } from "@/hooks/use-organisations";
 import { Plus, Trash2, X, CalendarClock, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_app/tasks")({
@@ -21,7 +22,6 @@ const COLS = [
 ];
 
 const PRIORITIES = ["Low", "Medium", "High", "Critical"];
-const ORGS = ["Agrofeed Global", "Tesserant Capital", "Al Huda CIBE", "Sharia Supervisory Board", "External Legal Counsel"];
 
 const inputCls =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
@@ -71,6 +71,7 @@ function Tasks() {
   const updateStatus = useUpdateTaskStatus();
   const deleteTask = useDeleteTask();
   const updateDue = useUpdateTaskDueDate();
+  const ORGS = useOrgNames();
 
   const [active, setActive] = useState<{ id: string; title: string } | null>(null);
   const [showNew, setShowNew] = useState(false);

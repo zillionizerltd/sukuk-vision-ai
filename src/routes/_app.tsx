@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/use-auth";
+import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -14,20 +15,19 @@ const AGROFEED_ONLY = [
   "/risks", "/financials", "/reports", "/ai-advisor", "/stakeholders", "/audit-trail",
 ];
 
-// Partner orgs also get Milestones + Tasks
-const PARTNER_ORGS = ["al huda cibe", "tesserant capital", "tesserant"];
 const PARTNER_ALLOWED = ["/milestones", "/tasks"];
 
 function AppLayout() {
   const { profile, loading, isAdmin } = useAuth();
+  const { data: orgs } = useOrganisations();
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading || !profile) return;
+    if (loading || !profile || !orgs) return;
     const org = (profile.org ?? "").toLowerCase();
     const isAgrofeed = org === "agrofeed global";
-    const isPartner = PARTNER_ORGS.some((o) => org.includes(o));
+    const isPartner = hasPartnerAccess(orgs, profile.org);
     if (isAdmin || isAgrofeed) return;
 
     const blocked = AGROFEED_ONLY.filter(
@@ -36,7 +36,7 @@ function AppLayout() {
     if (blocked.some((p) => location.pathname.startsWith(p))) {
       navigate({ to: "/documents", replace: true });
     }
-  }, [profile, loading, isAdmin, location.pathname, navigate]);
+  }, [profile, loading, isAdmin, orgs, location.pathname, navigate]);
 
   return (
     <div className="min-h-screen flex bg-secondary/30">

@@ -5,9 +5,7 @@ import {
 } from "lucide-react";
 import { AgrofeedLogo } from "../brand/Logo";
 import { useAuth } from "@/hooks/use-auth";
-
-// Orgs (besides Agrofeed Global) allowed to see Milestones + Tasks
-const PARTNER_ORGS = ["al huda cibe", "tesserant capital", "tesserant"];
+import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, restricted: true },
@@ -28,9 +26,10 @@ const NAV = [
 
 export function Sidebar() {
   const { profile, isAdmin } = useAuth();
+  const { data: orgs } = useOrganisations();
   const org = (profile?.org ?? "").toLowerCase();
   const isAgrofeed = org === "agrofeed global";
-  const isPartner = PARTNER_ORGS.some((o) => org.includes(o));
+  const isPartner = hasPartnerAccess(orgs, profile?.org);
   const base = NAV.filter(
     (n) => isAdmin || isAgrofeed || !n.restricted || (isPartner && "partner" in n && n.partner),
   );
