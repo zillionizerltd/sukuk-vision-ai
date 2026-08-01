@@ -180,24 +180,10 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
               isImage ? (
                 <img src={blobUrl ?? url!} alt={doc.name} className="max-h-full max-w-full object-contain" />
               ) : isPdf ? (
-                <object
-                  data={blobUrl ?? url!}
-                  type="application/pdf"
-                  title={doc.name}
-                  className="h-full w-full bg-background"
-                >
-                  <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-xs text-muted-foreground">
-                    <p>Your browser blocked the inline PDF viewer.</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => window.open(blobUrl ?? url!, "_blank", "noopener,noreferrer")}>
-                        <ExternalLink className="h-3.5 w-3.5" /> Open in new tab
-                      </Button>
-                      <Button size="sm" onClick={download}>
-                        <Download className="h-3.5 w-3.5" /> Download
-                      </Button>
-                    </div>
-                  </div>
-                </object>
+                <PdfCanvasViewer
+                  src={blobUrl ?? url!}
+                  className="h-full w-full overflow-y-auto bg-background"
+                />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-center text-xs text-muted-foreground">
                   <p>Inline preview isn’t available for this file type.</p>
