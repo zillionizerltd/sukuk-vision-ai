@@ -22,18 +22,19 @@ export function useAuth() {
       setSession(data.session);
       setUser(data.session?.user ?? null);
       setSessionLoading(false);
-      if (!data.session?.user) setDataLoading(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
+    if (sessionLoading) return;
     if (!user) {
       setRoles([]);
       setProfile(null);
       setDataLoading(false);
       return;
     }
+
     let cancelled = false;
     setDataLoading(true);
     Promise.all([
