@@ -11,6 +11,7 @@ import {
   useUpdateOrganisation,
   useDeleteOrganisation,
 } from "@/hooks/use-organisations";
+import { RoleDefinitionsPanel } from "@/components/admin/RoleDefinitionsPanel";
 import { FOLDERS } from "@/lib/demo-data";
 import { ShieldCheck, Check, FolderOpen, Building2, Plus, Trash2 } from "lucide-react";
 
