@@ -5,6 +5,7 @@ import { AgrofeedLogo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { useOrgNames } from "@/hooks/use-organisations";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
