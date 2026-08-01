@@ -598,6 +598,7 @@ export type Database = {
         Returns: boolean
       }
       can_write: { Args: { _user_id: string }; Returns: boolean }
+      current_user_org: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
