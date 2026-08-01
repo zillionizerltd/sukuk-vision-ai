@@ -89,13 +89,15 @@ function Advisor() {
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        api: "/api/chat",
+        // Respect the deployment base path (e.g. /dataroom/) so the request is not sent to the wrong origin path.
+        api: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/chat`,
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: { ...body, messages, context: contextRef.current },
         }),
       }),
     [],
   );
+
 
   const { messages, sendMessage, status, error, regenerate } = useChat({ transport });
   const busy = status === "submitted" || status === "streaming";
