@@ -49,7 +49,8 @@ export function useAuth() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, sessionLoading]);
+
 
   const loading = sessionLoading || dataLoading;
 
