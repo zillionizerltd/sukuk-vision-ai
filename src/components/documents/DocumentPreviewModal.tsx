@@ -25,6 +25,8 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [mime, setMime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [viewerError, setViewerError] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [body, setBody] = useState("");
