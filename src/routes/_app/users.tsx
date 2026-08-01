@@ -5,8 +5,14 @@ import { Card, PageHeader, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFolderAccess, useToggleFolderAccess } from "@/hooks/use-folder-access";
+import {
+  useOrganisations,
+  useCreateOrganisation,
+  useUpdateOrganisation,
+  useDeleteOrganisation,
+} from "@/hooks/use-organisations";
 import { FOLDERS } from "@/lib/demo-data";
-import { ShieldCheck, Check, FolderOpen } from "lucide-react";
+import { ShieldCheck, Check, FolderOpen, Building2, Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/users")({
   head: () => ({
@@ -130,7 +136,7 @@ function UsersPage() {
                   <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
                   <td className="py-2.5 pr-4">
                     <select
-                      value={ORGS.includes((u.org ?? "") as (typeof ORGS)[number]) ? (u.org as string) : ""}
+                      value={ORGS.includes(u.org ?? "") ? (u.org as string) : ""}
                       onChange={(e) => changeOrg(u.id, e.target.value)}
                       disabled={busy === `${u.id}:org`}
                       aria-label={`Organisation for ${u.full_name || u.id}`}
@@ -190,12 +196,12 @@ function UsersPage() {
             <FolderOpen className="h-4 w-4 text-primary" /> Data Room folder access
           </h3>
           <select
-            value={accessOrg}
+            value={selectedAccessOrg}
             onChange={(e) => setAccessOrg(e.target.value)}
             aria-label="Organisation for folder access"
             className="h-8 rounded-md border border-input bg-background px-2 text-sm"
           >
-            {ORGS.filter((o) => o !== "Agrofeed Global").map((o) => (
+            {accessOrgs.map((o) => (
               <option key={o} value={o}>{o}</option>
             ))}
           </select>
@@ -207,7 +213,7 @@ function UsersPage() {
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
           {FOLDERS.map((f) => {
             const granted = (access ?? []).some(
-              (r) => r.org.toLowerCase() === accessOrg.toLowerCase() && r.folder === f,
+              (r) => r.org.toLowerCase() === selectedAccessOrg.toLowerCase() && r.folder === f,
             );
             return (
               <label
@@ -219,7 +225,7 @@ function UsersPage() {
                   checked={granted}
                   onChange={() =>
                     toggleFolder.mutate(
-                      { org: accessOrg, folder: f, granted },
+                      { org: selectedAccessOrg, folder: f, granted },
                       { onError: (e) => setMsg((e as Error).message) },
                     )
                   }
