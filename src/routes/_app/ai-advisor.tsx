@@ -209,17 +209,34 @@ function Advisor() {
           )}
 
           {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <div className="font-medium">The AI Advisor could not answer.</div>
-                <div className="mt-1 break-words opacity-90">{error.message}</div>
+            <div className="flex gap-3">
+              <div className="h-8 w-8 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
               </div>
-              <button onClick={() => regenerate()} className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-2 py-1">
-                <RotateCcw className="h-3 w-3" /> Retry
-              </button>
+              <div className="flex-1 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1">
+                    <div className="font-medium">The AI Advisor could not answer your last message.</div>
+                    <div className="mt-1 break-words opacity-90">{error.message}</div>
+                    {unreachable && (
+                      <div className="mt-2 rounded-md bg-destructive/10 p-2 leading-relaxed opacity-90">
+                        The Advisor service could not be reached. If this app is served under
+                        <code className="mx-1 font-mono">/dataroom</code>, make sure the reverse proxy forwards
+                        <code className="mx-1 font-mono">POST /dataroom/api/chat</code> to the app, preserving the prefix.
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => regenerate()}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border border-destructive/40 px-2 py-1 hover:bg-destructive/15"
+                  >
+                    <RotateCcw className="h-3 w-3" /> Retry
+                  </button>
+                </div>
+              </div>
             </div>
           )}
+
 
           <div ref={endRef} />
 
