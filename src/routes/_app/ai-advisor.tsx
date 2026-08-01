@@ -103,6 +103,9 @@ function Advisor() {
 
   const { messages, sendMessage, status, error, regenerate } = useChat({ transport });
   const busy = status === "submitted" || status === "streaming";
+  // Network / routing failures (proxy not forwarding the chat endpoint) rather than a model error.
+  const unreachable = !!error && /failed to fetch|networkerror|load failed|not found|404|<!doctype/i.test(error.message);
+
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
