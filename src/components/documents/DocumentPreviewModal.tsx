@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAddComment, useComments, useDeleteComment } from "@/hooks/use-comments";
 import { Download, Loader2, MessageSquare, Trash2, X, ExternalLink } from "lucide-react";
+import { PdfCanvasViewer } from "./PdfCanvasViewer";
 
 export type PreviewDoc = {
   id: string;
