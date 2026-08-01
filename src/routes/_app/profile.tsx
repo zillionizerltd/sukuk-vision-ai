@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, PageHeader, Button, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/hooks/use-auth";
+import { RoleDescription } from "@/components/admin/RoleDefinitionsPanel";
 import { LogOut, User as UserIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_app/profile")({
