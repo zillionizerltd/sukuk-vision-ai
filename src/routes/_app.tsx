@@ -36,7 +36,7 @@ function AppLayout() {
     if (blocked.some((p) => location.pathname.startsWith(p))) {
       navigate({ to: "/documents", replace: true });
     }
-  }, [profile, loading, location.pathname, navigate]);
+  }, [profile, loading, isAdmin, location.pathname, navigate]);
 
   return (
     <div className="min-h-screen flex bg-secondary/30">
