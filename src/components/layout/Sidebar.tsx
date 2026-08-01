@@ -32,8 +32,9 @@ export function Sidebar() {
   const isAgrofeed = org === "agrofeed global";
   const isPartner = PARTNER_ORGS.some((o) => org.includes(o));
   const base = NAV.filter(
-    (n) => isAgrofeed || !n.restricted || (isPartner && "partner" in n && n.partner),
+    (n) => isAdmin || isAgrofeed || !n.restricted || (isPartner && "partner" in n && n.partner),
   );
+
   const items = isAdmin
     ? [...base, { to: "/users", label: "User Roles", icon: ShieldCheck } as const]
     : base;
