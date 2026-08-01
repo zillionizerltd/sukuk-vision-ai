@@ -191,6 +191,10 @@ function UsersPage() {
         )}
       </Card>
 
+      <div className="mt-6">
+        <RoleDefinitionsPanel />
+      </div>
+
       <Card className="mt-6">
         <h3 className="font-semibold flex items-center gap-2 mb-2">
           <Building2 className="h-4 w-4 text-primary" /> Organisations
