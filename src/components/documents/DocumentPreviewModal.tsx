@@ -225,19 +225,18 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
                 {error}
               </div>
             )}
-            {!loading && !error && (blobUrl || url) && (
-              isImage ? (
-                <img src={blobUrl ?? url!} alt={doc.name} className="max-h-full max-w-full object-contain" />
-              ) : isPdf ? (
-                <PdfCanvasViewer
-                  src={blobUrl ?? url!}
-                  className="h-full w-full overflow-y-auto bg-background"
-                />
-              ) : (
+            {!loading && !error && (blobUrl || url) && (() => {
+              const fileSrc = blobUrl ?? url!;
+              const fallback = (message?: string) => (
                 <div className="flex flex-col items-center gap-3 text-center text-xs text-muted-foreground">
-                  <p>Inline preview isn’t available for this file type.</p>
+                  <p>
+                    {message ??
+                      (kind === "legacy"
+                        ? "Legacy Office formats (.doc, .ppt, .xls binary) can’t be previewed in the browser. Download the file or convert it to a modern format."
+                        : "Inline preview isn’t available for this file type.")}
+                  </p>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => window.open(blobUrl ?? url!, "_blank", "noopener,noreferrer")}>
+                    <Button size="sm" variant="secondary" onClick={() => window.open(fileSrc, "_blank", "noopener,noreferrer")}>
                       <ExternalLink className="h-3.5 w-3.5" /> Open in new tab
                     </Button>
                     <Button size="sm" onClick={download}>
@@ -245,8 +244,40 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
                     </Button>
                   </div>
                 </div>
-              )
-            )}
+              );
+
+              if (viewerError) return fallback(`Preview failed: ${viewerError}`);
+              if (kind === "image")
+                return <img src={fileSrc} alt={doc.name} className="max-h-full max-w-full object-contain" />;
+              if (kind === "pdf")
+                return <PdfCanvasViewer src={fileSrc} className="h-full w-full overflow-y-auto bg-background" />;
+              if (kind === "docx")
+                return (
+                  <DocxViewer
+                    src={fileSrc}
+                    onError={setViewerError}
+                    className="h-full w-full overflow-y-auto bg-secondary/40 p-4"
+                  />
+                );
+              if (kind === "sheet")
+                return (
+                  <SheetViewer
+                    src={fileSrc}
+                    onError={setViewerError}
+                    className="flex h-full w-full flex-col overflow-hidden bg-background"
+                  />
+                );
+              if (kind === "pptx")
+                return (
+                  <PptxViewer
+                    src={fileSrc}
+                    onError={setViewerError}
+                    className="h-full w-full overflow-auto bg-secondary/40"
+                  />
+                );
+              return fallback();
+            })()}
+
 
           </div>
 
