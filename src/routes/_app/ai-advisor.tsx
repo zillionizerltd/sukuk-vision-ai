@@ -179,11 +179,14 @@ function Advisor() {
                 <div className="flex-1 space-y-3">
                   {(text || (!actions.length && !pendingActions)) && (
                     <Card>
-                      <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed">
-                        {text || <span className="text-muted-foreground">Thinking…</span>}
-                      </div>
+                      {text ? (
+                        <ChatMarkdown>{text}</ChatMarkdown>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Thinking…</span>
+                      )}
                     </Card>
                   )}
+
                   {pendingActions && !actions.length && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" /> Preparing an action…
