@@ -130,9 +130,11 @@ function LoginPage() {
                   onChange={(e) => setOrg(e.target.value)}
                   className="mt-1.5 w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  {ORGS.map((o) => (
+                  <option value="" disabled>— select organisation —</option>
+                  {orgNames.map((o) => (
                     <option key={o} value={o}>{o}</option>
                   ))}
+
                 </select>
                 <span className="mt-1 block text-[11px] text-muted-foreground">
                   Agrofeed Global staff receive full write access. Other organisations get read access plus document upload.
