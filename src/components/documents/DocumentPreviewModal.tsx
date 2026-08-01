@@ -89,22 +89,27 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
   }, [onClose]);
 
   const download = async () => {
-    if (!url) return;
     try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
+      let objUrl = blobUrl;
+      let revoke = false;
+      if (!objUrl) {
+        if (!url) return;
+        const res = await fetch(url);
+        objUrl = URL.createObjectURL(await res.blob());
+        revoke = true;
+      }
       const a = document.createElement("a");
       a.href = objUrl;
       a.download = doc.name;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+      if (revoke) setTimeout(() => URL.revokeObjectURL(objUrl!), 1000);
     } catch (e) {
       setError(`Download failed: ${(e as Error).message}`);
     }
   };
+
 
   const submit = () => {
     if (!user || !body.trim()) return;
