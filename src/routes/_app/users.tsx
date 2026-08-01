@@ -5,8 +5,14 @@ import { Card, PageHeader, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFolderAccess, useToggleFolderAccess } from "@/hooks/use-folder-access";
+import {
+  useOrganisations,
+  useCreateOrganisation,
+  useUpdateOrganisation,
+  useDeleteOrganisation,
+} from "@/hooks/use-organisations";
 import { FOLDERS } from "@/lib/demo-data";
-import { ShieldCheck, Check, FolderOpen } from "lucide-react";
+import { ShieldCheck, Check, FolderOpen, Building2, Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/users")({
   head: () => ({
@@ -25,23 +31,26 @@ export const Route = createFileRoute("/_app/users")({
 const ROLES = ["admin", "advisor", "auditor", "investor", "member"] as const;
 type Role = (typeof ROLES)[number];
 
-const ORGS = [
-  "Agrofeed Global",
-  "Tesserant Capital",
-  "Al Huda CIBE",
-  "Sharia Supervisory Board",
-  "External Legal Counsel",
-] as const;
-
 function UsersPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [accessOrg, setAccessOrg] = useState<string>(ORGS[1]);
+  const { data: orgs } = useOrganisations();
+  const ORGS = (orgs ?? []).map((o) => o.name);
+  const [accessOrg, setAccessOrg] = useState<string>("");
+  const [newOrg, setNewOrg] = useState("");
+  const [newOrgPartner, setNewOrgPartner] = useState(false);
+  const createOrg = useCreateOrganisation();
+  const updateOrg = useUpdateOrganisation();
+  const deleteOrg = useDeleteOrganisation();
   const { data: access } = useFolderAccess();
   const toggleFolder = useToggleFolderAccess();
+
+  const accessOrgs = ORGS.filter((o) => o.toLowerCase() !== "agrofeed global");
+  const selectedAccessOrg = accessOrg || accessOrgs[0] || "";
+
 
 
   useEffect(() => {
@@ -127,7 +136,7 @@ function UsersPage() {
                   <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
                   <td className="py-2.5 pr-4">
                     <select
-                      value={ORGS.includes((u.org ?? "") as (typeof ORGS)[number]) ? (u.org as string) : ""}
+                      value={ORGS.includes(u.org ?? "") ? (u.org as string) : ""}
                       onChange={(e) => changeOrg(u.id, e.target.value)}
                       disabled={busy === `${u.id}:org`}
                       aria-label={`Organisation for ${u.full_name || u.id}`}
@@ -182,17 +191,134 @@ function UsersPage() {
       </Card>
 
       <Card className="mt-6">
+        <h3 className="font-semibold flex items-center gap-2 mb-2">
+          <Building2 className="h-4 w-4 text-primary" /> Organisations
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Organisations here feed every dropdown in the platform — sign-up, member assignment, folder
+          access and task creation. Tick “Milestones &amp; Tasks” to let an organisation collaborate on
+          those modules.
+        </p>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setMsg(null);
+            createOrg.mutate(
+              { name: newOrg, partner_access: newOrgPartner },
+              {
+                onSuccess: () => {
+                  setMsg(`Added ${newOrg.trim()}.`);
+                  setNewOrg("");
+                  setNewOrgPartner(false);
+                },
+                onError: (e2) => setMsg((e2 as Error).message),
+              },
+            );
+          }}
+          className="flex flex-wrap items-center gap-2 mb-4"
+        >
+          <input
+            value={newOrg}
+            onChange={(e) => setNewOrg(e.target.value)}
+            placeholder="New organisation name"
+            required
+            aria-label="New organisation name"
+            className="h-9 flex-1 min-w-[220px] rounded-md border border-input bg-background px-3 text-sm"
+          />
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={newOrgPartner}
+              onChange={(e) => setNewOrgPartner(e.target.checked)}
+              className="h-4 w-4 accent-[hsl(var(--primary))]"
+            />
+            Milestones &amp; Tasks
+          </label>
+          <button
+            type="submit"
+            disabled={createOrg.isPending}
+            className="h-9 inline-flex items-center gap-1.5 rounded-md gradient-emerald px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4" /> Add
+          </button>
+        </form>
+
+        <div className="divide-y">
+          {(orgs ?? []).map((o) => (
+            <div key={o.id} className="flex flex-wrap items-center gap-3 py-2.5">
+              <input
+                defaultValue={o.name}
+                onBlur={(e) => {
+                  const next = e.target.value.trim();
+                  if (!next || next === o.name) return;
+                  setMsg(null);
+                  updateOrg.mutate(
+                    { id: o.id, name: next },
+                    {
+                      onSuccess: () => setMsg(`Renamed to ${next}.`),
+                      onError: (e2) => setMsg((e2 as Error).message),
+                    },
+                  );
+                }}
+                aria-label={`Name for ${o.name}`}
+                className="h-8 flex-1 min-w-[200px] rounded-md border border-input bg-background px-2 text-sm font-medium"
+              />
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={o.partner_access}
+                  disabled={o.is_protected}
+                  onChange={(e) => {
+                    setMsg(null);
+                    updateOrg.mutate(
+                      { id: o.id, partner_access: e.target.checked },
+                      { onError: (e2) => setMsg((e2 as Error).message) },
+                    );
+                  }}
+                  className="h-4 w-4 accent-[hsl(var(--primary))] disabled:opacity-60"
+                />
+                Milestones &amp; Tasks
+              </label>
+              {o.is_protected ? (
+                <Pill tone="gold">protected</Pill>
+              ) : (
+                <button
+                  onClick={() => {
+                    setMsg(null);
+                    deleteOrg.mutate(
+                      { id: o.id, name: o.name },
+                      {
+                        onSuccess: () => setMsg(`Removed ${o.name}.`),
+                        onError: (e2) => setMsg((e2 as Error).message),
+                      },
+                    );
+                  }}
+                  aria-label={`Delete ${o.name}`}
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-input text-destructive hover:bg-secondary"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+
+
+      <Card className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
           <h3 className="font-semibold flex items-center gap-2">
             <FolderOpen className="h-4 w-4 text-primary" /> Data Room folder access
           </h3>
           <select
-            value={accessOrg}
+            value={selectedAccessOrg}
             onChange={(e) => setAccessOrg(e.target.value)}
             aria-label="Organisation for folder access"
             className="h-8 rounded-md border border-input bg-background px-2 text-sm"
           >
-            {ORGS.filter((o) => o !== "Agrofeed Global").map((o) => (
+            {accessOrgs.map((o) => (
               <option key={o} value={o}>{o}</option>
             ))}
           </select>
@@ -204,7 +330,7 @@ function UsersPage() {
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
           {FOLDERS.map((f) => {
             const granted = (access ?? []).some(
-              (r) => r.org.toLowerCase() === accessOrg.toLowerCase() && r.folder === f,
+              (r) => r.org.toLowerCase() === selectedAccessOrg.toLowerCase() && r.folder === f,
             );
             return (
               <label
@@ -216,7 +342,7 @@ function UsersPage() {
                   checked={granted}
                   onChange={() =>
                     toggleFolder.mutate(
-                      { org: accessOrg, folder: f, granted },
+                      { org: selectedAccessOrg, folder: f, granted },
                       { onError: (e) => setMsg((e as Error).message) },
                     )
                   }

@@ -331,6 +331,36 @@ export type Database = {
         }
         Relationships: []
       }
+      organisations: {
+        Row: {
+          created_at: string
+          id: string
+          is_protected: boolean
+          name: string
+          partner_access: boolean
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_protected?: boolean
+          name: string
+          partner_access?: boolean
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_protected?: boolean
+          name?: string
+          partner_access?: boolean
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
