@@ -17,19 +17,12 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-const ORGS = [
-  "Agrofeed Global",
-  "Tesserant Capital",
-  "Al Huda CIBE",
-  "Sharia Supervisory Board",
-  "External Legal Counsel",
-] as const;
-
 function LoginPage() {
   const navigate = useNavigate();
+  const orgNames = useOrgNames();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [fullName, setFullName] = useState("");
-  const [org, setOrg] = useState<string>(ORGS[0]);
+  const [org, setOrg] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
