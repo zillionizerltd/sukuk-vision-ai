@@ -134,14 +134,13 @@ export function AdvisorChat({
     if (!busy) boxRef.current?.focus();
   }, [busy]);
 
-  const sentInitial = useRef<string | undefined>(undefined);
+  const sentKey = useRef<number | undefined>(undefined);
   useEffect(() => {
-    const prompt = initialPrompt?.trim();
-    if (!prompt || sentInitial.current === prompt) return;
-    sentInitial.current = prompt;
-    setMessages([]);
-    void sendMessage({ text: prompt });
-  }, [initialPrompt, sendMessage, setMessages]);
+    const text = prompt?.text.trim();
+    if (!text || prompt == null || sentKey.current === prompt.key) return;
+    sentKey.current = prompt.key;
+    void sendMessage({ text });
+  }, [prompt, sendMessage]);
 
   const send = () => {
     const text = input.trim();
@@ -150,13 +149,6 @@ export function AdvisorChat({
     void sendMessage({ text });
   };
 
-  useEffect(() => {
-    onSuggestionsChange?.((text: string) => {
-      if (busy) return;
-      setInput("");
-      void sendMessage({ text });
-    });
-  }, [onSuggestionsChange, sendMessage, busy]);
 
   return (
     <div className={variant === "modal" ? "flex h-full min-h-0 flex-col" : "space-y-4"}>
