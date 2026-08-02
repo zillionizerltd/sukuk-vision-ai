@@ -119,7 +119,7 @@ export function AdvisorChat({
     [],
   );
 
-  const { messages, sendMessage, status, error, regenerate, setMessages } = useChat({
+  const { messages, sendMessage, status, error, regenerate } = useChat({
     id: `advisor-${variant}-${resetKey ?? 0}`,
     transport,
   });
