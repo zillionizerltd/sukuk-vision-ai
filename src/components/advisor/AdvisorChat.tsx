@@ -56,19 +56,19 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export type AdvisorChatHandle = { reset: () => void };
+export type AdvisorPrompt = { text: string; key: number };
 
 export function AdvisorChat({
   variant = "page",
-  initialPrompt,
+  prompt,
   resetKey,
-  onSuggestionsChange,
 }: {
   variant?: "page" | "modal";
-  initialPrompt?: string;
+  /** Send a message from outside the component; bump `key` for each new send. */
+  prompt?: AdvisorPrompt;
   resetKey?: number;
-  onSuggestionsChange?: (send: (text: string) => void) => void;
 }) {
+
   const [input, setInput] = useState("");
   const boxRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
