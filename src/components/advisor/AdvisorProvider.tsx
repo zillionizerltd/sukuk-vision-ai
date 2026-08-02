@@ -21,7 +21,7 @@ export function AdvisorProvider({ children }: { children: ReactNode }) {
   const open = useCallback((initialPrompt?: string) => {
     setIsOpen(true);
     const text = initialPrompt?.trim();
-    if (text) setPrompt({ text, key: Date.now() });
+    if (text) setPrompt((p) => ({ text, key: (p?.key ?? 0) + 1 }));
   }, []);
 
   const close = useCallback(() => setIsOpen(false), []);
