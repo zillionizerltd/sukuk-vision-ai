@@ -3,6 +3,8 @@ import { Search, Sparkles, HelpCircle, ChevronDown, LogOut, User as UserIcon } f
 import { useState, useRef, useEffect } from "react";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { useAdvisor } from "@/components/advisor/AdvisorProvider";
+
 
 function initials(name: string | null | undefined, email: string | null | undefined) {
   const source = (name && name.trim()) || email || "";
