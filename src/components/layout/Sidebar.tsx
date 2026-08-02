@@ -26,7 +26,9 @@ const NAV = [
 
 export function Sidebar() {
   const { profile, isAdmin } = useAuth();
+  const advisor = useAdvisor();
   const { data: orgs } = useOrganisations();
+
   const org = (profile?.org ?? "").toLowerCase();
   const isAgrofeed = org === "agrofeed global";
   const isPartner = hasPartnerAccess(orgs, profile?.org);
