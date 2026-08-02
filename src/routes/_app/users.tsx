@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, PageHeader, Pill } from "@/components/ui/primitives";
+import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFolderAccess, useToggleFolderAccess } from "@/hooks/use-folder-access";
@@ -13,7 +13,22 @@ import {
 } from "@/hooks/use-organisations";
 import { RoleDefinitionsPanel } from "@/components/admin/RoleDefinitionsPanel";
 import { FOLDERS } from "@/lib/demo-data";
-import { ShieldCheck, Check, FolderOpen, Building2, Plus, Trash2 } from "lucide-react";
+import {
+  ShieldCheck,
+  Check,
+  FolderOpen,
+  UserPlus,
+  Mail,
+  Key,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  User as UserIcon,
+  Copy,
+  Building2,
+  Plus,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_app/users")({
   head: () => ({
@@ -33,7 +48,7 @@ const ROLES = ["admin", "advisor", "auditor", "investor", "member"] as const;
 type Role = (typeof ROLES)[number];
 
 function UsersPage() {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, loading, user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
@@ -53,6 +68,20 @@ function UsersPage() {
   const selectedAccessOrg = accessOrg || accessOrgs[0] || "";
 
 
+  // New member onboarding state
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteOrg, setInviteOrg] = useState<string>(ORGS[0]);
+  const [inviteRole, setInviteRole] = useState<Role>("member");
+  const [inviteMode, setInviteMode] = useState<"invite" | "create">("invite");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteFeedback, setInviteFeedback] = useState<{
+    type: "success" | "error";
+    text: string;
+    note?: string;
+    password?: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate({ to: "/documents", replace: true });
@@ -101,17 +130,286 @@ function UsersPage() {
     }
   };
 
+  const onInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteBusy(true);
+    setInviteFeedback(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        throw new Error("No active admin session found.");
+      }
+
+      const res = await fetch("/api/admin-users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: inviteEmail,
+          fullName: inviteName,
+          org: inviteOrg,
+          role: inviteRole,
+          mode: inviteMode,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({ error: "Server error" }));
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to process request");
+      }
+
+      setInviteFeedback({
+        type: "success",
+        text:
+          inviteMode === "invite"
+            ? `Invitation sent to ${inviteEmail} (${inviteRole} in ${inviteOrg}).`
+            : `Account created for ${inviteEmail}.`,
+        note: json.note,
+        password: json.generatedPassword,
+      });
+
+      setInviteEmail("");
+      setInviteName("");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (err) {
+      setInviteFeedback({
+        type: "error",
+        text: err instanceof Error ? err.message : "Something went wrong",
+      });
+    } finally {
+      setInviteBusy(false);
+    }
+  };
+
+  const removeUser = async (userId: string, userName: string) => {
+    if (!window.confirm(`Are you sure you want to remove ${userName || "this user"} from the Data Room?`)) {
+      return;
+    }
+    setBusy(`${userId}:delete`);
+    setMsg(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch("/api/admin-users", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
+      const json = await res.json().catch(() => ({ error: "Server error" }));
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to remove user");
+      }
+      setMsg(`Removed user ${userName || userId} from the Data Room.`);
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Failed to remove user");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   if (loading || !isAdmin) return <div className="text-sm text-muted-foreground">Loading…</div>;
 
   return (
     <>
       <PageHeader
-        title="User roles"
-        subtitle="Assign organisations and grant or revoke platform roles. Admins and advisors have full write access."
+        title="User roles & onboarding"
+        subtitle="Invite new members, assign organisations, and grant or revoke platform roles. Admins and advisors have full write access."
       />
 
       {msg && <div className="mb-4 text-xs text-muted-foreground">{msg}</div>}
+
+      {/* Invite / Create New User Card */}
+      <Card className="mb-8 border-l-4 border-l-primary shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" /> Invite / Create Member
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Onboard new stakeholders to the Sukuk Data Room. You can send an email invitation or create an account directly.
+            </p>
+          </div>
+          <div className="inline-flex rounded-lg bg-secondary p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setInviteMode("invite")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${
+                inviteMode === "invite"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Mail className="h-3.5 w-3.5" /> Send Invite Email
+            </button>
+            <button
+              type="button"
+              onClick={() => setInviteMode("create")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${
+                inviteMode === "create"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Key className="h-3.5 w-3.5" /> Create Direct Account
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={onInviteSubmit} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="block text-sm">
+              <span className="text-xs font-medium text-foreground/80">Full Name</span>
+              <div className="relative mt-1">
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  required
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                  placeholder="Fatuma Mwakasege"
+                  className="w-full h-10 rounded-lg border border-input bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </label>
+
+            <label className="block text-sm">
+              <span className="text-xs font-medium text-foreground/80">Work Email</span>
+              <div className="relative mt-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  required
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="fatuma@tesserant.com"
+                  className="w-full h-10 rounded-lg border border-input bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </label>
+
+            <label className="block text-sm">
+              <span className="text-xs font-medium text-foreground/80">Organisation</span>
+              <select
+                value={inviteOrg}
+                onChange={(e) => setInviteOrg(e.target.value)}
+                className="mt-1 w-full h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                {ORGS.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm">
+              <span className="text-xs font-medium text-foreground/80">Platform Role</span>
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as Role)}
+                className="mt-1 w-full h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {inviteMode === "create" && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5 text-xs text-foreground/80 flex items-start gap-2.5">
+              <Key className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+              <div>
+                <span className="font-semibold block text-foreground">
+                  System-Generated Temporary Password
+                </span>
+                <span>
+                  The system will automatically generate a secure temporary password. Once created,
+                  the password will be displayed below so you can share it with the user. They will
+                  be required to reset it upon their first login.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {inviteFeedback && (
+            <div
+              className={`rounded-lg border px-4 py-3 text-sm space-y-2.5 ${
+                inviteFeedback.type === "success"
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                  : "border-destructive/30 bg-destructive/10 text-destructive"
+              }`}
+            >
+              <div className="flex items-start gap-2.5">
+                {inviteFeedback.type === "success" ? (
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 shrink-0 text-destructive mt-0.5" />
+                )}
+                <div className="space-y-0.5">
+                  <div className="font-medium">{inviteFeedback.text}</div>
+                  {inviteFeedback.note && (
+                    <div className="text-xs opacity-90">{inviteFeedback.note}</div>
+                  )}
+                </div>
+              </div>
+
+              {inviteFeedback.password && (
+                <div className="mt-2 flex items-center justify-between rounded-md border border-emerald-500/20 bg-background/80 px-3 py-2 font-mono text-xs text-foreground">
+                  <div>
+                    <span className="text-muted-foreground mr-2">Generated Password:</span>
+                    <strong className="select-all font-semibold tracking-wide">
+                      {inviteFeedback.password}
+                    </strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteFeedback.password || "");
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="flex items-center gap-1 rounded bg-secondary px-2 py-1 text-[11px] font-sans font-medium text-foreground hover:bg-secondary/80 transition"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-3 w-3 text-emerald-500" /> Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" /> Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center justify-end pt-2 border-t border-border">
+            <Button type="submit" disabled={inviteBusy} className="h-10 px-5">
+              {inviteBusy ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {inviteMode === "invite" ? "Sending invite…" : "Creating account…"}
+                </>
+              ) : inviteMode === "invite" ? (
+                <>
+                  <Mail className="h-4 w-4" /> Send Invitation
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4" /> Create Account
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Card>
 
       <Card className="overflow-x-auto">
         <h3 className="font-semibold flex items-center gap-2 mb-4">
@@ -129,12 +427,20 @@ function UsersPage() {
                 {ROLES.map((r) => (
                   <th key={r} className="py-2 px-2 text-center">{r}</th>
                 ))}
+                <th className="py-2 px-2 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {(data ?? []).map((u) => (
                 <tr key={u.id} className="border-b last:border-0">
-                  <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
+                  <td className="py-2.5 pr-4 font-medium">
+                    <div className="flex items-center gap-1.5">
+                      <span>{u.full_name || "—"}</span>
+                      {u.id === user?.id && (
+                        <Pill tone="gold">You</Pill>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-2.5 pr-4">
                     <select
                       value={ORGS.includes(u.org ?? "") ? (u.org as string) : ""}
@@ -184,6 +490,25 @@ function UsersPage() {
                       </td>
                     );
                   })}
+                  <td className="py-2.5 px-2 text-right">
+                    <button
+                      onClick={() => removeUser(u.id, u.full_name || u.id)}
+                      disabled={u.id === user?.id || busy === `${u.id}:delete`}
+                      aria-label={`Remove user ${u.full_name || u.id}`}
+                      title={
+                        u.id === user?.id
+                          ? "You cannot remove your own admin account"
+                          : "Remove user from Data Room"
+                      }
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition disabled:opacity-30 disabled:pointer-events-none"
+                    >
+                      {busy === `${u.id}:delete` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

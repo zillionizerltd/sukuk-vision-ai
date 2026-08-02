@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Profile = { id: string; full_name: string | null; org: string | null };
+export type Profile = {
+  id: string;
+  full_name: string | null;
+  org: string | null;
+  must_reset_password?: boolean | null;
+};
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -38,11 +43,15 @@ export function useAuth() {
     let cancelled = false;
     setDataLoading(true);
     Promise.all([
-      supabase.from("profiles").select("id, full_name, org").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("id, full_name, org, must_reset_password")
+        .eq("id", user.id)
+        .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", user.id),
     ]).then(([p, r]) => {
       if (cancelled) return;
-      setProfile(p.data ?? null);
+      setProfile(p.data as unknown as Profile ?? null);
       setRoles((r.data ?? []).map((x) => x.role as string));
       setDataLoading(false);
     });
@@ -54,8 +63,15 @@ export function useAuth() {
 
   const loading = sessionLoading || dataLoading;
 
-  return { session, user, profile, roles, isAdmin: roles.includes("admin"), loading };
-
+  return {
+    session,
+    user,
+    profile,
+    setProfile,
+    roles,
+    isAdmin: roles.includes("admin"),
+    loading,
+  };
 }
 
 export async function signOut() {

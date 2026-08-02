@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
 import { AdvisorProvider } from "@/components/advisor/AdvisorProvider";
 
+import { ForcePasswordResetModal } from "@/components/auth/ForcePasswordResetModal";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -43,18 +44,20 @@ function AppLayout() {
 
   return (
     <AdvisorProvider>
-      <div className="min-h-screen flex bg-secondary/30">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <TopBar />
-          <main className="flex-1 min-w-0">
-            <div className="px-4 lg:px-8 py-6 lg:py-8 max-w-[1600px] mx-auto">
-              <Outlet />
-            </div>
-          </main>
-          <Footer />
+     
+    <div className="min-h-screen flex bg-secondary/30">
+      <ForcePasswordResetModal />
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopBar />
+        <main className="flex-1 min-w-0">
+          <div className="px-4 lg:px-8 py-6 lg:py-8 max-w-[1600px] mx-auto">
+            <Outlet />
+          </div>
+        </main>
+        <Footer />
         </div>
-      </div>
+        </div>
     </AdvisorProvider>
   );
 
