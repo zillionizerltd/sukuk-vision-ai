@@ -6,6 +6,8 @@ import {
 import { AgrofeedLogo } from "../brand/Logo";
 import { useAuth } from "@/hooks/use-auth";
 import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
+import { useAdvisor } from "@/components/advisor/AdvisorProvider";
+
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, restricted: true },
