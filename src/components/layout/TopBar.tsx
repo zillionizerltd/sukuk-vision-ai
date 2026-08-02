@@ -14,7 +14,10 @@ export function TopBar() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const advisor = useAdvisor();
   const ref = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
