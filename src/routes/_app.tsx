@@ -5,6 +5,8 @@ import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
+import { AdvisorProvider } from "@/components/advisor/AdvisorProvider";
+
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -12,8 +14,9 @@ export const Route = createFileRoute("/_app")({
 
 const AGROFEED_ONLY = [
   "/dashboard", "/milestones", "/tasks", "/structuring", "/compliance",
-  "/risks", "/financials", "/reports", "/ai-advisor", "/stakeholders", "/audit-trail",
+  "/risks", "/financials", "/reports", "/stakeholders", "/audit-trail",
 ];
+
 
 const PARTNER_ALLOWED = ["/milestones", "/tasks"];
 
@@ -39,17 +42,20 @@ function AppLayout() {
   }, [profile, loading, isAdmin, orgs, location.pathname, navigate]);
 
   return (
-    <div className="min-h-screen flex bg-secondary/30">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
-        <main className="flex-1 min-w-0">
-          <div className="px-4 lg:px-8 py-6 lg:py-8 max-w-[1600px] mx-auto">
-            <Outlet />
-          </div>
-        </main>
-        <Footer />
+    <AdvisorProvider>
+      <div className="min-h-screen flex bg-secondary/30">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopBar />
+          <main className="flex-1 min-w-0">
+            <div className="px-4 lg:px-8 py-6 lg:py-8 max-w-[1600px] mx-auto">
+              <Outlet />
+            </div>
+          </main>
+          <Footer />
+        </div>
       </div>
-    </div>
+    </AdvisorProvider>
   );
+
 }
