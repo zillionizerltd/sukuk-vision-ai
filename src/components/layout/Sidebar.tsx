@@ -17,7 +17,7 @@ const NAV = [
   { to: "/risks", label: "Risks", icon: AlertTriangle, restricted: true },
   { to: "/financials", label: "Financials", icon: LineChart, restricted: true },
   { to: "/reports", label: "Reports", icon: FileText, restricted: true },
-  { to: "/ai-advisor", label: "AI Advisor", icon: Sparkles, restricted: true },
+  { to: "/ai-advisor", label: "AI Advisor", icon: Sparkles, restricted: false, advisor: true },
   { to: "/stakeholders", label: "Stakeholders", icon: Users, restricted: true },
   { to: "/audit-trail", label: "Audit Trail", icon: History, restricted: true },
   { to: "/profile", label: "Profile", icon: Users, restricted: false },
