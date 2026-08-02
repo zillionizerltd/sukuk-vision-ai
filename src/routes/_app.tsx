@@ -12,8 +12,9 @@ export const Route = createFileRoute("/_app")({
 
 const AGROFEED_ONLY = [
   "/dashboard", "/milestones", "/tasks", "/structuring", "/compliance",
-  "/risks", "/financials", "/reports", "/ai-advisor", "/stakeholders", "/audit-trail",
+  "/risks", "/financials", "/reports", "/stakeholders", "/audit-trail",
 ];
+
 
 const PARTNER_ALLOWED = ["/milestones", "/tasks"];
 
