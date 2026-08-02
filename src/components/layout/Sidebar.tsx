@@ -43,17 +43,31 @@ export function Sidebar() {
         <AgrofeedLogo />
       </div>
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-        {items.map(({ to, label, icon: Icon }) => (
-          <Link
-            key={to}
-            to={to}
-            className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-            activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-sidebar-border" }}
-          >
-            <Icon className="h-4 w-4 shrink-0 opacity-80 group-hover:opacity-100" />
-            <span>{label}</span>
-          </Link>
-        ))}
+        {items.map((item) => {
+          const { to, label, icon: Icon } = item;
+          const cls =
+            "group w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors";
+          if ("advisor" in item && item.advisor) {
+            return (
+              <button key={to} onClick={() => advisor.open()} className={cls}>
+                <Icon className="h-4 w-4 shrink-0 opacity-80 group-hover:opacity-100" />
+                <span>{label}</span>
+              </button>
+            );
+          }
+          return (
+            <Link
+              key={to}
+              to={to}
+              className={cls}
+              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-sidebar-border" }}
+            >
+              <Icon className="h-4 w-4 shrink-0 opacity-80 group-hover:opacity-100" />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+
       </nav>
       <div className="border-t border-sidebar-border p-4 text-[11px] leading-relaxed text-sidebar-foreground/60">
         <span className="text-gold font-medium">Confidential.</span> Analytical tools only —
