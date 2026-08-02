@@ -5,6 +5,8 @@ import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
+import { AdvisorProvider } from "@/components/advisor/AdvisorProvider";
+
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
