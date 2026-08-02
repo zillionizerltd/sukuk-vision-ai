@@ -44,19 +44,34 @@ export function TopBar() {
         <div className="relative flex-1 max-w-xl">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const text = query.trim();
+                if (!text) return;
+                setQuery("");
+                advisor.open(text);
+              }
+            }}
             placeholder="Search documents, milestones, ask a question…"
             className="w-full h-10 rounded-lg border border-input bg-secondary/40 pl-9 pr-3 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background"
           />
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden lg:block text-[10px] text-muted-foreground">
+            Enter to ask AI
+          </span>
         </div>
 
         <div className="flex items-center gap-1.5">
-          <Link
-            to="/ai-advisor"
+          <button
+            onClick={() => advisor.open()}
             className="hidden sm:inline-flex items-center gap-1.5 rounded-lg gradient-emerald px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-95 transition"
           >
             <Sparkles className="h-4 w-4" />
             AI Advisor
-          </Link>
+          </button>
+
           <NotificationBell />
           <button className="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-secondary transition" aria-label="Help">
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
