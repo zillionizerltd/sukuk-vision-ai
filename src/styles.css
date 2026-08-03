@@ -1,4 +1,4 @@
-@import "tailwindcss" source(none);
+@import "tailwindcss";
 @source "../src";
 @import "tw-animate-css";
 
@@ -15,7 +15,8 @@
  *   White         #FFFFFF
  */
 
-@theme inline {
+@theme inline
+{
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,14 +63,19 @@
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-:root {
+:root
+{
   --radius: 0.75rem;
 
   /* Brand */
-  --brand-emerald: oklch(0.48 0.09 172);      /* #006B5E */
-  --brand-gold:    oklch(0.78 0.14 88);       /* #D4AF37 */
-  --brand-navy:    oklch(0.22 0.04 265);      /* #0F172A */
-  --brand-grey:    oklch(0.97 0.005 250);     /* #F5F7FA */
+  --brand-emerald: oklch(0.48 0.09 172);
+  /* #006B5E */
+  --brand-gold: oklch(0.78 0.14 88);
+  /* #D4AF37 */
+  --brand-navy: oklch(0.22 0.04 265);
+  /* #0F172A */
+  --brand-grey: oklch(0.97 0.005 250);
+  /* #F5F7FA */
 
   --background: oklch(1 0 0);
   --foreground: var(--brand-navy);
@@ -124,7 +130,8 @@
   --shadow-elevated: 0 8px 32px -8px oklch(0.22 0.04 265 / 0.16);
 }
 
-.dark {
+.dark
+{
   --background: var(--brand-navy);
   --foreground: oklch(0.97 0.005 250);
 
@@ -172,32 +179,46 @@
   --shadow-elevated: 0 8px 32px -8px oklch(0 0 0 / 0.6);
 }
 
-@layer base {
-  * {
+@layer base
+{
+  *
+  {
     border-color: var(--color-border);
   }
-  html, body {
+
+  html,
+  body
+  {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 {
+
+  h1,
+  h2,
+  h3,
+  h4
+  {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
   }
 }
 
-@utility card-elevated {
+@utility card-elevated
+{
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
 }
 
-@utility gradient-emerald {
+@utility gradient-emerald
+{
   background-image: linear-gradient(135deg, var(--brand-emerald), color-mix(in oklab, var(--brand-emerald) 70%, black));
 }
-@utility gradient-gold {
+
+@utility gradient-gold
+{
   background-image: linear-gradient(135deg, var(--brand-gold), color-mix(in oklab, var(--brand-gold) 80%, black));
 }

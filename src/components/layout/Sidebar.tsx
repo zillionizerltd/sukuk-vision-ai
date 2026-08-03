@@ -41,9 +41,7 @@ export function Sidebar() {
   const items = isAdmin
     ? [...base, { to: "/users", label: "User Roles", icon: ShieldCheck } as const]
     : base;
-  useEffect(() => {
-  
-  },[isAdmin])
+
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
