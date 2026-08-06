@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useDocuments, useFolders } from "@/hooks/use-modules";
-import { useFolderAccess, allowedFolders } from "@/hooks/use-folder-access";
+import { useFolderAccess, allowedFolders, useToggleFolderAccess } from "@/hooks/use-folder-access";
+import { useOrganisations } from "@/hooks/use-organisations";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { DocumentPreviewModal, type PreviewDoc } from "@/components/documents/DocumentPreviewModal";
-import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye } from "lucide-react";
+import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye, FolderPlus, Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({ meta: [{ title: "Data Room · Documents · Agrofeed Sukuk" }, { name: "description", content: "Secure document repository with AI analysis." }] }),
@@ -33,12 +37,44 @@ function Documents() {
   const [uploadFolder, setUploadFolder] = useState<string>("");
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderAccess, setNewFolderAccess] = useState<string[]>([]);
+  const [accessModalFolder, setAccessModalFolder] = useState<string | null>(null);
+
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile } = useAuth();
   const { data: access } = useFolderAccess();
+  const { data: orgs = [] } = useOrganisations();
   const qc = useQueryClient();
   const canWrite = (profile?.org ?? "").toLowerCase() === "agrofeed global";
   const visibleFolders = allowedFolders(access, profile?.org, FOLDERS);
+  const toggleAccess = useToggleFolderAccess();
+
+  const createFolderMut = useMutation({
+    mutationFn: async ({ folder, accessOrgs }: { folder: string, accessOrgs: string[] }) => {
+      const inserts = [
+        { org: "Agrofeed Global", folder },
+        ...accessOrgs.map(org => ({ org, folder }))
+      ];
+      const { error } = await supabase.from("folder_access").insert(inserts);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      setNewFolderOpen(false);
+      setNewFolderName("");
+      setNewFolderAccess([]);
+      setMsg("Folder created successfully");
+    }
+  });
+
+  const handleCreateFolder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFolderName.trim()) return;
+    createFolderMut.mutate({ folder: newFolderName.trim(), accessOrgs: newFolderAccess });
+  };
 
   const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
 
@@ -291,6 +327,15 @@ function Documents() {
         <Card className="max-h-[70vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">Folders</h3>
+            {canWrite && (
+              <button
+                onClick={() => setNewFolderOpen(true)}
+                className="text-[11px] font-medium text-primary hover:underline flex items-center gap-1"
+              >
+                <FolderPlus className="h-3.5 w-3.5" />
+                New
+              </button>
+            )}
           </div>
           <button onClick={() => setSelected(null)} className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-secondary ${!selected ? "bg-secondary font-medium" : ""}`}>
             <FolderOpen className="h-4 w-4 text-gold" />
@@ -313,7 +358,20 @@ function Documents() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="!p-3">
+          <Card className="!p-3 flex flex-col gap-3">
+            {selected && (
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4 text-gold" />
+                  {selected}
+                </h2>
+                {canWrite && (
+                  <Button variant="secondary" size="sm" className="h-7 text-[11px] px-2 gap-1.5" onClick={() => setAccessModalFolder(selected)}>
+                    <Settings className="h-3.5 w-3.5" /> Manage Access
+                  </Button>
+                )}
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -387,7 +445,90 @@ function Documents() {
       </div>
 
       {previewDoc && <DocumentPreviewModal doc={previewDoc} onClose={() => setPreviewDoc(null)} />}
-    </>
 
+      {/* New Folder Modal */}
+      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Folder</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateFolder} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="folderName" className="text-sm font-medium">Folder Name</label>
+              <Input
+                id="folderName"
+                placeholder="e.g. Q4 Financials"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Initial Access (Optional)</label>
+              <p className="text-xs text-muted-foreground">Select organizations that should have immediate access to this folder.</p>
+              <div className="space-y-3 max-h-[30vh] overflow-y-auto pr-2 mt-2">
+                {orgs.filter(o => o.name !== "Agrofeed Global").map(o => {
+                  const hasAccess = newFolderAccess.includes(o.name);
+                  return (
+                    <div key={o.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/30">
+                      <div>
+                        <div className="text-sm font-medium">{o.name}</div>
+                      </div>
+                      <Switch
+                        checked={hasAccess}
+                        onCheckedChange={(checked) => {
+                          if (checked) setNewFolderAccess(prev => [...prev, o.name]);
+                          else setNewFolderAccess(prev => prev.filter(name => name !== o.name));
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={!newFolderName.trim() || createFolderMut.isPending}>
+                {createFolderMut.isPending ? "Creating..." : "Create Folder"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Access Modal */}
+      <Dialog open={!!accessModalFolder} onOpenChange={(v) => !v && setAccessModalFolder(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Access: {accessModalFolder}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-muted-foreground">
+              By default, folders are visible to everyone. If you explicitly grant access to an organization, only organizations with explicit access can see it.
+            </p>
+            <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
+              {orgs.filter(o => o.name !== "Agrofeed Global").map(o => {
+                const hasAccess = (access ?? []).some(a => a.folder === accessModalFolder && a.org === o.name);
+                return (
+                  <div key={o.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/30">
+                    <div>
+                      <div className="text-sm font-medium">{o.name}</div>
+                      <div className="text-xs text-muted-foreground">{hasAccess ? "Can view" : "No access"}</div>
+                    </div>
+                    <Switch
+                      checked={hasAccess}
+                      onCheckedChange={() => toggleAccess.mutate({ org: o.name, folder: accessModalFolder!, granted: hasAccess })}
+                      disabled={toggleAccess.isPending}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

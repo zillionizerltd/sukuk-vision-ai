@@ -380,9 +380,19 @@ export function useFolders() {
   return useQuery({
     queryKey: ["folders"],
     queryFn: async (): Promise<string[]> => {
-      const { data, error } = await supabase.from("documents").select("folder");
-      if (error) throw error;
-      const folders = new Set((data ?? []).map(d => d.folder).filter(Boolean));
+      const [docsResp, accessResp] = await Promise.all([
+        supabase.from("documents").select("folder"),
+        supabase.from("folder_access").select("folder")
+      ]);
+      
+      if (docsResp.error) throw docsResp.error;
+      if (accessResp.error) throw accessResp.error;
+
+      const folders = new Set([
+        ...(docsResp.data ?? []).map(d => d.folder),
+        ...(accessResp.data ?? []).map(d => d.folder)
+      ].filter(Boolean));
+
       if (folders.size === 0) {
         return [
           "Corporate Documents", "Financial Statements", "Legal Documents",

@@ -5,12 +5,12 @@ import path from "node:path";
 // To deploy under https://agrofeedglobal.com/dataroom:
 //   VITE_BASE_PATH=/dataroom/ bun run build
 // Reverse-proxy /dataroom → this app's origin, preserving the /dataroom prefix.
-const BASE = process.env.VITE_BASE_PATH ?? "/";
+const BASE = process.env.VITE_BASE_PATH ?? "/dataroom";
 
 export default async (env: any) => {
   const { loadEnv } = await import("vite");
   const { defineConfig } = await import("@lovable.dev/vite-tanstack-config");
-  
+
   // Load all env vars (including non-VITE server-only secrets) into process.env
   // for server-side code. These are NOT exposed to the client bundle.
   const serverEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
