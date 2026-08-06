@@ -142,7 +142,7 @@ function UsersPage() {
         throw new Error("No active admin session found.");
       }
 
-      const res = await fetch("/api/admin-users", {
+      const res = await fetch("/dataroom/api/admin-users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -194,7 +194,7 @@ function UsersPage() {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const res = await fetch("/api/admin-users", {
+      const res = await fetch("/dataroom/api/admin-users", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -252,8 +252,8 @@ function UsersPage() {
               type="button"
               onClick={() => setInviteMode("invite")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${inviteMode === "invite"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               <Mail className="h-3.5 w-3.5" /> Send Invite Email
@@ -339,8 +339,8 @@ function UsersPage() {
           {inviteFeedback && (
             <div
               className={`rounded-lg border px-4 py-3 text-sm space-y-2.5 ${inviteFeedback.type === "success"
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                  : "border-destructive/30 bg-destructive/10 text-destructive"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-destructive/30 bg-destructive/10 text-destructive"
                 }`}
             >
               <div className="flex items-start gap-2.5">
@@ -479,8 +479,8 @@ function UsersPage() {
                           disabled={busy === key}
                           aria-label={`${has ? "Remove" : "Grant"} ${r} for ${u.full_name || u.id}`}
                           className={`h-6 w-6 inline-flex items-center justify-center rounded border transition ${has
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "border-input hover:bg-secondary"
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-input hover:bg-secondary"
                             } ${busy === key ? "opacity-50" : ""}`}
                         >
                           {has && <Check className="h-3.5 w-3.5" />}
