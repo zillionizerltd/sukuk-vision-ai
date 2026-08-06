@@ -133,8 +133,7 @@ function LoginPage() {
             </h1>
             <div className="mt-6 h-1.5 w-20 rounded-full bg-gold" />
             <p className="mt-6 text-lg xl:text-xl text-white/85 leading-relaxed text-pretty">
-              The Sukuk Data Room for secure collaboration, document sharing, and investor due
-              diligence.
+              The Sukuk Data Room for secure collaboration, document sharing, and investor due diligence.
             </p>
 
             <div className="mt-10 space-y-5 xl:space-y-6">
@@ -144,12 +143,8 @@ function LoginPage() {
                     <feature.icon className="h-5 w-5 xl:h-6 xl:w-6 text-gold" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-base xl:text-lg font-semibold text-white">
-                      {feature.title}
-                    </div>
-                    <div className="text-sm xl:text-base text-white/70 text-pretty">
-                      {feature.description}
-                    </div>
+                    <div className="text-base xl:text-lg font-semibold text-white">{feature.title}</div>
+                    <div className="text-sm xl:text-base text-white/70 text-pretty">{feature.description}</div>
                   </div>
                 </div>
               ))}
@@ -169,12 +164,9 @@ function LoginPage() {
               <SukukDataRoomLogo />
             </div>
 
-
             <div className="grid grid-cols-1 gap-1 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:justify-between lg:gap-4">
               <div className="min-w-0">
-                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-navy">
-                  Welcome back
-                </h2>
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-navy">Welcome back</h2>
                 <p className="mt-1 text-[13px] sm:text-sm text-muted-foreground text-pretty">
                   Sign in to access the Sukuk Data Room
                 </p>
@@ -191,7 +183,6 @@ function LoginPage() {
             </div>
 
             <form onSubmit={submit} className="mt-6 sm:mt-8 space-y-4 sm:space-y-5">
-
               <label className="block text-sm">
                 <span className="font-medium text-foreground">Work email</span>
                 <div className="relative mt-2">
@@ -261,12 +252,7 @@ function LoginPage() {
                 </div>
               )}
 
-              <Button
-                variant="gold"
-                className="w-full h-12 text-base"
-                type="submit"
-                disabled={busy}
-              >
+              <Button variant="gold" className="w-full h-12 text-base" type="submit" disabled={busy}>
                 {busy ? "Please wait…" : "Sign in"}
               </Button>
 
@@ -279,7 +265,7 @@ function LoginPage() {
                 </div>
               </div>
 
-              <button
+              {/* <button
                 type="button"
                 onClick={google}
                 className="w-full h-12 rounded-xl border border-input text-sm font-medium hover:bg-secondary transition-colors inline-flex items-center justify-center gap-2"
@@ -303,7 +289,7 @@ function LoginPage() {
                   />
                 </svg>
                 Continue with Google
-              </button>
+              </button> */}
             </form>
 
             <div className="mt-6 rounded-xl border border-border bg-secondary/40 p-4">
@@ -314,8 +300,8 @@ function LoginPage() {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Invitation-only access</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Access is restricted to authorized stakeholders only. New accounts and roles are
-                    managed by Data Room administrators.
+                    Access is restricted to authorized stakeholders only. New accounts and roles are managed by Data
+                    Room administrators.
                   </p>
                 </div>
               </div>
