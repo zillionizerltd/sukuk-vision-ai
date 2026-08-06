@@ -9,104 +9,54 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppAiAdvisorRouteImport } from './routes/_app/ai-advisor'
-import { Route as AppAuditTrailRouteImport } from './routes/_app/audit-trail'
-import { Route as AppComplianceRouteImport } from './routes/_app/compliance'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
-import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
-import { Route as AppFinancialsRouteImport } from './routes/_app/financials'
-import { Route as AppMilestonesRouteImport } from './routes/_app/milestones'
-import { Route as AppProfileRouteImport } from './routes/_app/profile'
-import { Route as AppReportsRouteImport } from './routes/_app/reports'
-import { Route as AppRisksRouteImport } from './routes/_app/risks'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppStakeholdersRouteImport } from './routes/_app/stakeholders'
-import { Route as AppStructuringRouteImport } from './routes/_app/structuring'
-import { Route as AppTasksRouteImport } from './routes/_app/tasks'
-import { Route as AppUsersRouteImport } from './routes/_app/users'
-import { Route as ApiAdminUsersRouteImport } from './routes/api/admin-users'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiAdminUsersRouteImport } from './routes/api/admin-users'
+import { Route as AppUsersRouteImport } from './routes/_app/users'
+import { Route as AppTasksRouteImport } from './routes/_app/tasks'
+import { Route as AppStructuringRouteImport } from './routes/_app/structuring'
+import { Route as AppStakeholdersRouteImport } from './routes/_app/stakeholders'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppRisksRouteImport } from './routes/_app/risks'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppMilestonesRouteImport } from './routes/_app/milestones'
+import { Route as AppFinancialsRouteImport } from './routes/_app/financials'
+import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppComplianceRouteImport } from './routes/_app/compliance'
+import { Route as AppAuditTrailRouteImport } from './routes/_app/audit-trail'
+import { Route as AppAiAdvisorRouteImport } from './routes/_app/ai-advisor'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppAiAdvisorRoute = AppAiAdvisorRouteImport.update({
-  id: '/ai-advisor',
-  path: '/ai-advisor',
-  getParentRoute: () => AppRoute,
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppAuditTrailRoute = AppAuditTrailRouteImport.update({
-  id: '/audit-trail',
-  path: '/audit-trail',
-  getParentRoute: () => AppRoute,
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin-users',
+  path: '/api/admin-users',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppComplianceRoute = AppComplianceRouteImport.update({
-  id: '/compliance',
-  path: '/compliance',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDocumentsRoute = AppDocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFinancialsRoute = AppFinancialsRouteImport.update({
-  id: '/financials',
-  path: '/financials',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMilestonesRoute = AppMilestonesRouteImport.update({
-  id: '/milestones',
-  path: '/milestones',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReportsRoute = AppReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRisksRoute = AppRisksRouteImport.update({
-  id: '/risks',
-  path: '/risks',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppStakeholdersRoute = AppStakeholdersRouteImport.update({
-  id: '/stakeholders',
-  path: '/stakeholders',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppStructuringRoute = AppStructuringRouteImport.update({
-  id: '/structuring',
-  path: '/structuring',
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTasksRoute = AppTasksRouteImport.update({
@@ -114,20 +64,70 @@ const AppTasksRoute = AppTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AppRoute,
 } as any)
-const AppUsersRoute = AppUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+const AppStructuringRoute = AppStructuringRouteImport.update({
+  id: '/structuring',
+  path: '/structuring',
   getParentRoute: () => AppRoute,
 } as any)
-const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
-  id: '/api/admin-users',
-  path: '/api/admin-users',
-  getParentRoute: () => rootRouteImport,
+const AppStakeholdersRoute = AppStakeholdersRouteImport.update({
+  id: '/stakeholders',
+  path: '/stakeholders',
+  getParentRoute: () => AppRoute,
 } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRisksRoute = AppRisksRouteImport.update({
+  id: '/risks',
+  path: '/risks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMilestonesRoute = AppMilestonesRouteImport.update({
+  id: '/milestones',
+  path: '/milestones',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinancialsRoute = AppFinancialsRouteImport.update({
+  id: '/financials',
+  path: '/financials',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComplianceRoute = AppComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditTrailRoute = AppAuditTrailRouteImport.update({
+  id: '/audit-trail',
+  path: '/audit-trail',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiAdvisorRoute = AppAiAdvisorRouteImport.update({
+  id: '/ai-advisor',
+  path: '/ai-advisor',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -272,11 +272,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -286,102 +286,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/ai-advisor': {
-      id: '/_app/ai-advisor'
-      path: '/ai-advisor'
-      fullPath: '/ai-advisor'
-      preLoaderRoute: typeof AppAiAdvisorRouteImport
-      parentRoute: typeof AppRoute
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/audit-trail': {
-      id: '/_app/audit-trail'
-      path: '/audit-trail'
-      fullPath: '/audit-trail'
-      preLoaderRoute: typeof AppAuditTrailRouteImport
-      parentRoute: typeof AppRoute
+    '/api/admin-users': {
+      id: '/api/admin-users'
+      path: '/api/admin-users'
+      fullPath: '/api/admin-users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/compliance': {
-      id: '/_app/compliance'
-      path: '/compliance'
-      fullPath: '/compliance'
-      preLoaderRoute: typeof AppComplianceRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/documents': {
-      id: '/_app/documents'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof AppDocumentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/financials': {
-      id: '/_app/financials'
-      path: '/financials'
-      fullPath: '/financials'
-      preLoaderRoute: typeof AppFinancialsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/milestones': {
-      id: '/_app/milestones'
-      path: '/milestones'
-      fullPath: '/milestones'
-      preLoaderRoute: typeof AppMilestonesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/reports': {
-      id: '/_app/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AppReportsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/risks': {
-      id: '/_app/risks'
-      path: '/risks'
-      fullPath: '/risks'
-      preLoaderRoute: typeof AppRisksRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/stakeholders': {
-      id: '/_app/stakeholders'
-      path: '/stakeholders'
-      fullPath: '/stakeholders'
-      preLoaderRoute: typeof AppStakeholdersRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/structuring': {
-      id: '/_app/structuring'
-      path: '/structuring'
-      fullPath: '/structuring'
-      preLoaderRoute: typeof AppStructuringRouteImport
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/tasks': {
@@ -391,26 +321,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTasksRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/users': {
-      id: '/_app/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AppUsersRouteImport
+    '/_app/structuring': {
+      id: '/_app/structuring'
+      path: '/structuring'
+      fullPath: '/structuring'
+      preLoaderRoute: typeof AppStructuringRouteImport
       parentRoute: typeof AppRoute
     }
-    '/api/admin-users': {
-      id: '/api/admin-users'
-      path: '/api/admin-users'
-      fullPath: '/api/admin-users'
-      preLoaderRoute: typeof ApiAdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/stakeholders': {
+      id: '/_app/stakeholders'
+      path: '/stakeholders'
+      fullPath: '/stakeholders'
+      preLoaderRoute: typeof AppStakeholdersRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/risks': {
+      id: '/_app/risks'
+      path: '/risks'
+      fullPath: '/risks'
+      preLoaderRoute: typeof AppRisksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/milestones': {
+      id: '/_app/milestones'
+      path: '/milestones'
+      fullPath: '/milestones'
+      preLoaderRoute: typeof AppMilestonesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/financials': {
+      id: '/_app/financials'
+      path: '/financials'
+      fullPath: '/financials'
+      preLoaderRoute: typeof AppFinancialsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/documents': {
+      id: '/_app/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/compliance': {
+      id: '/_app/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof AppComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/audit-trail': {
+      id: '/_app/audit-trail'
+      path: '/audit-trail'
+      fullPath: '/audit-trail'
+      preLoaderRoute: typeof AppAuditTrailRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ai-advisor': {
+      id: '/_app/ai-advisor'
+      path: '/ai-advisor'
+      fullPath: '/ai-advisor'
+      preLoaderRoute: typeof AppAiAdvisorRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
@@ -463,13 +463,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
