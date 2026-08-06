@@ -62,13 +62,22 @@ function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       <div className="relative hidden lg:flex flex-col justify-between p-12 bg-navy text-navy-foreground overflow-hidden">
+        <img
+          src={dubaiSkyline}
+          alt="Dubai skyline at dusk overlooking the financial district"
+          width={1280}
+          height={1920}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-navy/70" />
         <div
-          className="absolute inset-0 opacity-30 pointer-events-none"
+          className="absolute inset-0 opacity-40 pointer-events-none"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 20%, var(--brand-emerald), transparent 60%), radial-gradient(circle at 80% 80%, var(--brand-gold), transparent 55%)",
+              "linear-gradient(160deg, color-mix(in oklab, var(--brand-emerald) 55%, transparent), transparent 55%), linear-gradient(20deg, color-mix(in oklab, var(--brand-navy) 90%, transparent), transparent 70%)",
           }}
         />
+
         <div className="relative">
           <AgrofeedLogo />
         </div>
