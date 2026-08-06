@@ -104,7 +104,7 @@ function LoginPage() {
       {/* Full-bleed background */}
       <img
         src={dubaiSkyline}
-        alt="Dubai skyline at dusk overlooking the financial district"
+        alt="Dubai skyline at daytime overlooking the financial district"
         width={1920}
         height={1080}
         className="absolute inset-0 h-full w-full object-cover"
