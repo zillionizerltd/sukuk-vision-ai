@@ -238,6 +238,30 @@ export const Route = createFileRoute("/api/admin-users")({
           );
         }
 
+        // Email the temporary password to the new user
+        let emailStatus: string | undefined;
+        if (modeUsed === "create") {
+          try {
+            const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+            const result = await sendTemplateEmail("temp-password", email, {
+              templateData: {
+                fullName,
+                email,
+                tempPassword: generatedPassword,
+                org,
+                loginUrl: `${origin.replace(/\/$/, "")}/login`,
+              },
+              idempotencyKey: `temp-password-${createdUser.id}`,
+            });
+            emailStatus = result.sent
+              ? "sent"
+              : "not_sent_recipient_suppressed";
+          } catch (err) {
+            emailStatus = `not_sent: ${err instanceof Error ? err.message : "unknown error"}`;
+            console.error("Failed to send temporary password email:", err);
+          }
+        }
+
         return new Response(
           JSON.stringify({
             success: true,
@@ -251,6 +275,7 @@ export const Route = createFileRoute("/api/admin-users")({
             generatedPassword,
             mustResetPassword: true,
             modeUsed,
+            emailStatus,
             note: authErrorMsg
               ? `Note: Email invite failed (${authErrorMsg}), so account was created directly.`
               : undefined,
