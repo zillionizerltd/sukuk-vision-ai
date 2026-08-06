@@ -180,15 +180,15 @@ function LoginPage() {
                   Sign in to access the Sukuk Data Room
                 </p>
               </div>
-              <div className="hidden lg:block text-right">
-                <div className="text-xs text-muted-foreground">New here?</div>
-                <a
-                  href="mailto:admin@agrofeedglobal.com?subject=Request%20invitation%20to%20Sukuk%20Data%20Room"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-gold/80 transition-colors"
-                >
-                  Request invitation <ArrowRight className="h-3.5 w-3.5" />
-                </a>
-              </div>
+                <div className="hidden lg:block text-right whitespace-nowrap">
+                  <div className="text-xs text-muted-foreground">New here?</div>
+                  <a
+                    href="mailto:admin@agrofeedglobal.com?subject=Request%20invitation%20to%20Sukuk%20Data%20Room"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-gold/80 transition-colors"
+                  >
+                    Request invitation <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                </div>
             </div>
 
             <form onSubmit={submit} className="mt-8 space-y-5">
