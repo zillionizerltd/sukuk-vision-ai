@@ -29,6 +29,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppComplianceRouteImport } from './routes/_app/compliance'
 import { Route as AppAuditTrailRouteImport } from './routes/_app/audit-trail'
 import { Route as AppAiAdvisorRouteImport } from './routes/_app/ai-advisor'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -129,6 +130,12 @@ const AppAiAdvisorRoute = AppAiAdvisorRouteImport.update({
   path: '/ai-advisor',
   getParentRoute: () => AppRoute,
 } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AppUsersRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/chat': typeof ApiChatRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -171,6 +179,7 @@ export interface FileRoutesByTo {
   '/users': typeof AppUsersRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/chat': typeof ApiChatRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -194,6 +203,7 @@ export interface FileRoutesById {
   '/_app/users': typeof AppUsersRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/chat': typeof ApiChatRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/admin-users'
     | '/api/chat'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/api/admin-users'
     | '/api/chat'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -260,6 +272,7 @@ export interface FileRouteTypes {
     | '/_app/users'
     | '/api/admin-users'
     | '/api/chat'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -268,6 +281,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiChatRoute: typeof ApiChatRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAiAdvisorRouteImport
       parentRoute: typeof AppRoute
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -459,7 +480,18 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiChatRoute: ApiChatRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
