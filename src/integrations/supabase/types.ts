@@ -626,19 +626,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_access_folder: {
-        Args: { _folder: string; _user_id: string }
-        Returns: boolean
-      }
-      can_write: { Args: { _user_id: string }; Returns: boolean }
-      current_user_org: { Args: never; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "advisor" | "auditor" | "investor" | "member"
