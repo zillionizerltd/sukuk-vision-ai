@@ -109,7 +109,7 @@ function LoginPage() {
         height={1080}
         className="absolute inset-0 h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-navy/80" />
+      <div className="absolute inset-0 bg-navy/75" />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
