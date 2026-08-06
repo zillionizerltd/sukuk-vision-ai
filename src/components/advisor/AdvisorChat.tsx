@@ -111,7 +111,7 @@ export function AdvisorChat({
     () =>
       new DefaultChatTransport({
         // Respect the deployment base path (e.g. /dataroom/) so the request is not sent to the wrong origin path.
-        api: `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/chat`,
+        api: `${(import.meta.env.VITE_ROUTER_BASEPATH ?? "/dataroom/").replace(/\/$/, "")}/api/chat`,
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: { ...body, messages, context: contextRef.current },
         }),
