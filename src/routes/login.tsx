@@ -170,10 +170,12 @@ function LoginPage() {
             </div>
 
 
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-navy">Welcome back</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+            <div className="grid grid-cols-1 gap-1 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:justify-between lg:gap-4">
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-navy">
+                  Welcome back
+                </h2>
+                <p className="mt-1 text-[13px] sm:text-sm text-muted-foreground text-pretty">
                   Sign in to access the Sukuk Data Room
                 </p>
               </div>
@@ -183,12 +185,13 @@ function LoginPage() {
                   href="mailto:admin@agrofeedglobal.com?subject=Request%20invitation%20to%20Sukuk%20Data%20Room"
                   className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-gold/80 transition-colors"
                 >
-                  Request invitation <ArrowRight className="h-3.5 w-3.5" />
+                  Request invitation <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </a>
               </div>
             </div>
 
-            <form onSubmit={submit} className="mt-8 space-y-5">
+            <form onSubmit={submit} className="mt-6 sm:mt-8 space-y-4 sm:space-y-5">
+
               <label className="block text-sm">
                 <span className="font-medium text-foreground">Work email</span>
                 <div className="relative mt-2">
