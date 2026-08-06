@@ -21,7 +21,6 @@ const handler = createAuthEmailHandler({
   apiKey: process.env['LOVABLE_API_KEY']!,
   from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
   senderDomain: SENDER_DOMAIN,
-  sendUrl: process.env['LOVABLE_SEND_URL'],
   emails: {
     signup: {
       subject: 'Confirm your email',
