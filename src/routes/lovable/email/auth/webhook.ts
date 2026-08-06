@@ -9,7 +9,7 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "sukuk-vision-ai"
+const SITE_NAME = "Agrofeed Global Sukuk Data Room"
 const SENDER_DOMAIN = "notify.agrofeedglobal.com"
 const ROOT_DOMAIN = "agrofeedglobal.com"
 const FROM_DOMAIN = "agrofeedglobal.com"
