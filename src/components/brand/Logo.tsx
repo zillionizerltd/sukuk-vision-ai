@@ -1,10 +1,10 @@
-import agrofeedLogo from "@/assets/agrofeed-logo.jpg.asset.json";
+import agrofeedLogo from "../../assets/agrofeed-logo.jpg";
 
 export function AgrofeedLogo({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex min-w-0 items-center gap-2.5">
       <img
-        src={agrofeedLogo.url}
+        src={agrofeedLogo}
         alt="Agrofeed Global"
         className="h-9 w-9 shrink-0 rounded-lg bg-white object-contain p-0.5 shadow-md"
       />
@@ -26,7 +26,7 @@ export function SukukDataRoomLogo({ inverted = false }: { inverted?: boolean }) 
   return (
     <div className="flex min-w-0 items-center gap-3 sm:gap-4">
       <img
-        src={agrofeedLogo.url}
+        src={agrofeedLogo}
         alt="Agrofeed Global"
         className="h-12 w-auto max-w-[168px] shrink-0 rounded-lg bg-white object-contain px-2 py-1 sm:h-14 sm:max-w-[210px]"
       />
