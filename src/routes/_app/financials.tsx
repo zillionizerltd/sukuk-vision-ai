@@ -1,7 +1,11 @@
+import { useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Button } from "@/components/ui/primitives";
 import { useFinancials } from "@/hooks/use-modules";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { CheckCircle, Loader2, AlertCircle, UploadCloud } from "lucide-react";
 
 export const Route = createFileRoute("/_app/financials")({
   head: () => ({ meta: [{ title: "Financials · Agrofeed Sukuk" }, { name: "description", content: "Financial intelligence and scenario analysis." }] }),
@@ -20,13 +24,99 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
 
 function Financials() {
   const { data: FINANCIALS } = useFinancials();
+  const { user } = useAuth();
   const r = FINANCIALS?.ratios;
+
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "done" | "error">("idle");
+  const [uploadMsg, setUploadMsg] = useState("");
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadState("uploading");
+    setUploadMsg(file.name);
+
+    const path = `${user.id}/financials/${Date.now()}-${file.name}`;
+    const { error: upErr } = await supabase.storage.from("documents").upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+    if (upErr) {
+      setUploadState("error");
+      setUploadMsg(upErr.message);
+      // reset file input
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+
+    const { error: insErr } = await supabase.from("documents").insert({
+      name: file.name,
+      folder: "Financial Models",
+      size_bytes: file.size,
+      mime_type: file.type || null,
+      storage_path: path,
+      confidentiality: "confidential",
+      status: "draft",
+      uploaded_by: user.id,
+    });
+
+    if (insErr) {
+      // rollback storage file
+      await supabase.storage.from("documents").remove([path]).catch(() => {});
+      setUploadState("error");
+      setUploadMsg(insErr.message);
+    } else {
+      setUploadState("done");
+      setUploadMsg(`${file.name} uploaded successfully`);
+    }
+
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
   if (!r || !FINANCIALS) return null;
   
   return (
     <>
-      <PageHeader title="Financial Intelligence" subtitle="Revenue, EBITDA, ratios, scenarios, and stress testing"
-                  actions={<Button size="sm">Upload financial model</Button>} />
+      <input
+        ref={fileRef}
+        type="file"
+        className="hidden"
+        accept=".xlsx,.xls,.csv,.pdf"
+        onChange={handleUpload}
+      />
+      <PageHeader
+        title="Financial Intelligence"
+        subtitle="Revenue, EBITDA, ratios, scenarios, and stress testing"
+        actions={
+          <div className="flex items-center gap-3">
+            {uploadState === "uploading" && (
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />{uploadMsg}
+              </span>
+            )}
+            {uploadState === "done" && (
+              <span className="flex items-center gap-1.5 text-xs text-emerald-600">
+                <CheckCircle className="h-3.5 w-3.5" />{uploadMsg}
+              </span>
+            )}
+            {uploadState === "error" && (
+              <span className="flex items-center gap-1.5 text-xs text-destructive">
+                <AlertCircle className="h-3.5 w-3.5" />{uploadMsg}
+              </span>
+            )}
+            <Button
+              size="sm"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploadState === "uploading"}
+            >
+              <UploadCloud className="h-3.5 w-3.5" />Upload financial model
+            </Button>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-5">
         <Metric label="DSCR" value={r.dscr.toFixed(2)} sub="Base case" />

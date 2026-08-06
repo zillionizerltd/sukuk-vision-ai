@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useTasks } from "@/hooks/use-modules";
@@ -76,6 +76,8 @@ function Tasks() {
 
   const [active, setActive] = useState<{ id: string; title: string } | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
   const [form, setForm] = useState({
     title: "",
     org: profile?.org ?? ORGS[0],
@@ -89,6 +91,12 @@ function Tasks() {
   const overdueTasks = TASKS.filter(
     (t) => t.status !== "completed" && (daysUntil(t.due) ?? 0) < 0,
   );
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      org: profile?.org ?? ORGS[0],
+    }));
+  }, [profile?.org, ORGS]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +146,7 @@ function Tasks() {
             </div>
             <input className={`${inputCls} md:col-span-3`} placeholder="Task title" value={form.title}
                    onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-            <select className={inputCls} value={form.org} onChange={(e) => setForm({ ...form, org: e.target.value })}>
+            <select className={inputCls} value={form.org} onChange={(e) => setForm({ ...form, org: e.target.value })} disabled={!roles.includes("admin")}>
               {ORGS.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
             <input className={inputCls} placeholder="Assignee" value={form.assignee}
@@ -168,7 +176,29 @@ function Tasks() {
               ? TASKS.filter((t) => t.status === "overdue" || ((t.status === "not_started" || t.status === "in_progress") && (daysUntil(t.due) ?? 0) < 0))
               : TASKS.filter((t) => t.status === col.key && (t.status === "completed" || !((daysUntil(t.due) ?? 0) < 0)));
           return (
-            <Card key={col.key} className="!p-4">
+            <Card
+              key={col.key}
+              className={`!p-4 transition-colors ${dragOverCol === col.key ? "ring-2 ring-ring bg-secondary/50" : ""}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDragOverCol(col.key);
+              }}
+              onDragLeave={(e) => {
+                // only clear if leaving the card itself (not a child)
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setDragOverCol(null);
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverCol(null);
+                const taskId = e.dataTransfer.getData("application/json");
+                if (taskId) {
+                  updateStatus.mutate({ id: taskId, status: col.key });
+                }
+              }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{col.label}</span>
@@ -177,7 +207,15 @@ function Tasks() {
               </div>
               <div className="space-y-2">
                 {items.map((t) => (
-                  <div key={t.id} className="rounded-lg border border-input bg-background p-3 hover:shadow-md transition-shadow">
+                  <div
+                    key={t.id}
+                    draggable={canEdit(t)}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("application/json", t.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    className={`rounded-lg border border-input bg-background p-3 transition-shadow ${canEdit(t) ? "cursor-grab hover:shadow-md active:cursor-grabbing" : ""}`}
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="text-sm font-medium leading-snug">{t.title}</div>
                       {canEdit(t) && (

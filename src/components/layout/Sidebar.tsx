@@ -2,44 +2,130 @@ import { Link } from "@tanstack/react-router";
 import {
   LayoutDashboard, FolderOpen, Flag, ListChecks, Layers, ShieldCheck,
   AlertTriangle, LineChart, FileText, Sparkles, Users, Settings, History,
+  UserCog,
 } from "lucide-react";
 import { AgrofeedLogo } from "../brand/Logo";
 import { useAuth } from "@/hooks/use-auth";
-import { useOrganisations, hasPartnerAccess } from "@/hooks/use-organisations";
 import { useAdvisor } from "@/components/advisor/AdvisorProvider";
 
+// Each nav item declares which roles can see it.
+// "all" means every authenticated user, regardless of role.
+type NavRole = "admin" | "advisor" | "auditor" | "investor" | "member" | "all";
 
-const NAV = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, restricted: true },
-  { to: "/documents", label: "Data Room", icon: FolderOpen, restricted: false },
-  { to: "/milestones", label: "Milestones", icon: Flag, restricted: true, partner: true },
-  { to: "/tasks", label: "Tasks", icon: ListChecks, restricted: true, partner: true },
-  { to: "/structuring", label: "Sukuk Structuring", icon: Layers, restricted: true },
-  { to: "/compliance", label: "Compliance", icon: ShieldCheck, restricted: true },
-  { to: "/risks", label: "Risks", icon: AlertTriangle, restricted: true },
-  { to: "/financials", label: "Financials", icon: LineChart, restricted: true },
-  { to: "/reports", label: "Reports", icon: FileText, restricted: true },
-  { to: "/ai-advisor", label: "AI Advisor", icon: Sparkles, restricted: false, advisor: true },
-  { to: "/stakeholders", label: "Stakeholders", icon: Users, restricted: true },
-  { to: "/audit-trail", label: "Audit Trail", icon: History, restricted: true },
-  { to: "/profile", label: "Profile", icon: Users, restricted: false },
-  { to: "/settings", label: "Settings", icon: Settings, restricted: false },
-] as const;
+type NavItem = {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  roles: NavRole[];
+  advisor?: true;
+};
+
+const NAV: NavItem[] = [
+  {
+    to: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    roles: ["admin", "advisor"],
+  },
+  {
+    to: "/documents",
+    label: "Data Room",
+    icon: FolderOpen,
+    roles: ["all"],
+  },
+  {
+    to: "/milestones",
+    label: "Milestones",
+    icon: Flag,
+    roles: ["admin", "advisor", "auditor", "investor", "member"],
+  },
+  {
+    to: "/tasks",
+    label: "Tasks",
+    icon: ListChecks,
+    roles: ["admin", "advisor", "auditor", "investor", "member"],
+  },
+  {
+    to: "/structuring",
+    label: "Sukuk Structuring",
+    icon: Layers,
+    roles: ["admin", "advisor"],
+  },
+  {
+    to: "/compliance",
+    label: "Compliance",
+    icon: ShieldCheck,
+    roles: ["admin", "advisor", "auditor"],
+  },
+  {
+    to: "/risks",
+    label: "Risks",
+    icon: AlertTriangle,
+    roles: ["admin", "advisor", "auditor"],
+  },
+  {
+    to: "/financials",
+    label: "Financials",
+    icon: LineChart,
+    roles: ["admin", "advisor", "auditor", "investor"],
+  },
+  {
+    to: "/reports",
+    label: "Reports",
+    icon: FileText,
+    roles: ["admin", "advisor", "auditor", "investor"],
+  },
+  {
+    to: "/ai-advisor",
+    label: "AI Advisor",
+    icon: Sparkles,
+    roles: ["all"],
+    advisor: true,
+  },
+  {
+    to: "/stakeholders",
+    label: "Stakeholders",
+    icon: Users,
+    roles: ["admin", "advisor"],
+  },
+  {
+    to: "/audit-trail",
+    label: "Audit Trail",
+    icon: History,
+    roles: ["admin", "auditor"],
+  },
+  {
+    to: "/settings",
+    label: "Settings",
+    icon: Settings,
+    roles: ["admin"],
+  },
+  {
+    to: "/users",
+    label: "User Management",
+    icon: UserCog,
+    roles: ["admin"],
+  },
+  {
+    to: "/profile",
+    label: "Profile",
+    icon: Users,
+    roles: ["all"],
+  },
+];
+
+function canSee(item: NavItem, userRoles: string[]): boolean {
+  if (item.roles.includes("all")) return true;
+  return item.roles.some((r) => userRoles.includes(r));
+}
 
 export function Sidebar() {
-  const { profile, isAdmin } = useAuth();
+  const { roles } = useAuth();
   const advisor = useAdvisor();
-  const { data: orgs } = useOrganisations();
 
-  const org = (profile?.org ?? "").toLowerCase();
-  const isAgrofeed = org === "agrofeed global";
-  const isPartner = hasPartnerAccess(orgs, profile?.org);
-  const base = NAV.filter(
-    (n) => isAdmin || isAgrofeed || !n.restricted || (isPartner && "partner" in n && n.partner),
-  );
-  const items = isAdmin
-    ? [...base, { to: "/users", label: "User Roles", icon: ShieldCheck } as const]
-    : base;
+  // If user has no explicit roles yet, treat as "member"
+  const effectiveRoles = roles.length > 0 ? roles : ["member"];
+  const items = NAV.filter((item) => canSee(item, effectiveRoles));
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
@@ -51,7 +137,7 @@ export function Sidebar() {
           const { to, label, icon: Icon } = item;
           const cls =
             "group w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors";
-          if ("advisor" in item && item.advisor) {
+          if (item.advisor) {
             return (
               <button key={to} onClick={() => advisor.open()} className={cls}>
                 <Icon className="h-4 w-4 shrink-0 opacity-80 group-hover:opacity-100" />
@@ -71,7 +157,6 @@ export function Sidebar() {
             </Link>
           );
         })}
-
       </nav>
       <div className="border-t border-sidebar-border p-4 text-[11px] leading-relaxed text-sidebar-foreground/60">
         <span className="text-gold font-medium">Confidential.</span> Analytical tools only —

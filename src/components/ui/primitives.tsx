@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn("card-elevated p-5", className)}>{children}</div>;
+export function Card({ className, children, ...rest }: React.ComponentPropsWithoutRef<"div"> & { className?: string; children: ReactNode }) {
+  return <div className={cn("card-elevated p-5", className)} {...rest}>{children}</div>;
 }
 
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: ReactNode }) {

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useCompliance } from "@/hooks/use-modules";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/_app/compliance")({
   head: () => ({ meta: [{ title: "Compliance · Agrofeed Sukuk" }, { name: "description", content: "AAOIFI, IFSB, Sharia, IFRS, AML/KYC, ESG, and regulatory compliance." }] }),
@@ -15,10 +16,28 @@ function Compliance() {
   const gaps = COMPLIANCE.filter((c) => c.status === "gap").length;
   const inprog = COMPLIANCE.filter((c) => c.status === "in_progress").length;
   const score = COMPLIANCE.length ? Math.round((complete / COMPLIANCE.length) * 100) : 0;
+
+  const handleExport = () => {
+    if (!COMPLIANCE.length) return;
+    
+    const exportData = COMPLIANCE.map(c => ({
+      Requirement: c.req,
+      Source: c.source,
+      Owner: c.owner,
+      Risk: c.risk,
+      Status: c.status.replace("_", " "),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Compliance");
+    XLSX.writeFile(wb, "Agrofeed_Compliance_Report.xlsx");
+  };
+
   return (
     <>
       <PageHeader title="AI Compliance Engine" subtitle="AAOIFI · IFSB · Sharia governance · IFRS · AML/KYC · ESG · Tanzania & UAE regulatory"
-                  actions={<Button size="sm">Export compliance report</Button>} />
+                  actions={<Button size="sm" onClick={handleExport}>Export compliance report</Button>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
         <Card><div className="text-[11px] uppercase tracking-widest text-muted-foreground">Compliance Score</div><div className="text-3xl font-semibold mt-1">{score}%</div></Card>
