@@ -2,14 +2,14 @@
 // or the app will break with duplicate plugins.
 import path from "node:path";
 
-// To deploy under https://agrofeedglobal.com/dataroom:
-//   VITE_BASE_PATH=/dataroom/ bun run build
-// Reverse-proxy /dataroom → this app's origin, preserving the /dataroom prefix.
-const rawBase = process.env.VITE_BASE_PATH ?? "/dataroom/";
-// Ensure trailing slash for Vite base
-const BASE = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
-// Strip leading/trailing slashes to get just the subpath name (e.g. "dataroom")
-const SUBPATH = BASE.replace(/^\//, "").replace(/\/$/, "");
+// Deployed under https://agrofeedglobal.com/dataroom.
+// IMPORTANT: static files are served from the origin ROOT (/assets/*), so Vite's
+// `base` must stay "/" — prefixing it with /dataroom/ makes every CSS/JS request
+// fall through to SSR and return HTML (MIME-type errors in the browser).
+// The URL prefix is applied by the ROUTER basepath instead (see src/router.tsx),
+// driven by VITE_ROUTER_BASEPATH.
+const BASE = "/";
+
 
 export default async (env: any) => {
   const { loadEnv } = await import("vite");
