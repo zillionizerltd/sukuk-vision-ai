@@ -1,9 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button, ProgressBar } from "@/components/ui/primitives";
 import { ReadinessGauge } from "@/components/dashboard/ReadinessGauge";
-import { useMilestones, useDashboardMetrics, useNotifications, useGapAnalysis, useFinancials } from "@/hooks/use-modules";
-import { ArrowUpRight, FileText, Flag, ShieldAlert, Users, Wallet, Calendar, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, BarChart, Bar, Legend } from "recharts";
+import {
+  useMilestones,
+  useDashboardMetrics,
+  useNotifications,
+  useGapAnalysis,
+  useFinancials,
+} from "@/hooks/use-modules";
+import {
+  ArrowUpRight,
+  FileText,
+  Flag,
+  ShieldAlert,
+  Users,
+  Wallet,
+  Calendar,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
@@ -15,7 +43,19 @@ export const Route = createFileRoute("/_app/dashboard")({
   component: Dashboard,
 });
 
-function KPI({ icon: Icon, label, value, tone = "neutral", sub }: { icon: any; label: string; value: string | number; tone?: "success" | "warning" | "danger" | "neutral" | "gold"; sub?: string }) {
+function KPI({
+  icon: Icon,
+  label,
+  value,
+  tone = "neutral",
+  sub,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  tone?: "success" | "warning" | "danger" | "neutral" | "gold";
+  sub?: string;
+}) {
   const toneMap: Record<string, string> = {
     success: "text-[color-mix(in_oklab,var(--success)_60%,black)]",
     warning: "text-[color-mix(in_oklab,var(--warning)_55%,black)]",
@@ -59,6 +99,8 @@ function Dashboard() {
     investorPackage: 0,
   };
 
+  const key = process.env.LOVABLE_API_KEY;
+  console.log("key", key);
   return (
     <>
       <PageHeader
@@ -66,8 +108,13 @@ function Dashboard() {
         subtitle="Live Sukuk readiness, project health, and stakeholder activity."
         actions={
           <>
-            <Button variant="secondary" size="sm">Export PDF</Button>
-            <Button size="sm"><ArrowUpRight className="h-3.5 w-3.5" />Generate Board Report</Button>
+            <Button variant="secondary" size="sm">
+              Export PDF
+            </Button>
+            <Button size="sm">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              Generate Board Report
+            </Button>
           </>
         }
       />
@@ -87,14 +134,49 @@ function Dashboard() {
         </Card>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KPI icon={FileText} label="Total Documents" value={KPIS.totalDocuments} sub={`${KPIS.approved} approved · ${KPIS.pendingReview} in review`} />
-          <KPI icon={AlertTriangle} label="Missing Documents" tone="warning" value={KPIS.missing} sub="AI gap analysis" />
-          <KPI icon={Flag} label="Overdue Milestones" tone="danger" value={KPIS.overdueMilestones} sub="4 need attention" />
-          <KPI icon={ShieldAlert} label="Open Compliance" tone="warning" value={KPIS.openCompliance} sub="4 high, 8 medium" />
-          <KPI icon={Wallet} label="Estimated Sukuk" tone="gold" value={`$${KPIS.estimatedSizeUsdM}M`} sub="USD, initial size" />
+          <KPI
+            icon={FileText}
+            label="Total Documents"
+            value={KPIS.totalDocuments}
+            sub={`${KPIS.approved} approved · ${KPIS.pendingReview} in review`}
+          />
+          <KPI
+            icon={AlertTriangle}
+            label="Missing Documents"
+            tone="warning"
+            value={KPIS.missing}
+            sub="AI gap analysis"
+          />
+          <KPI
+            icon={Flag}
+            label="Overdue Milestones"
+            tone="danger"
+            value={KPIS.overdueMilestones}
+            sub="4 need attention"
+          />
+          <KPI
+            icon={ShieldAlert}
+            label="Open Compliance"
+            tone="warning"
+            value={KPIS.openCompliance}
+            sub="4 high, 8 medium"
+          />
+          <KPI
+            icon={Wallet}
+            label="Estimated Sukuk"
+            tone="gold"
+            value={`$${KPIS.estimatedSizeUsdM}M`}
+            sub="USD, initial size"
+          />
           <KPI icon={Calendar} label="Expected Issuance" value={KPIS.expectedIssuance} sub="on-track scenario" />
           <KPI icon={Users} label="Active Users" value={KPIS.activeUsers} sub="across 5 organisations" />
-          <KPI icon={CheckCircle2} label="Pending Approvals" tone="warning" value={KPIS.pendingApprovals} sub="review queue" />
+          <KPI
+            icon={CheckCircle2}
+            label="Pending Approvals"
+            tone="warning"
+            value={KPIS.pendingApprovals}
+            sub="review queue"
+          />
         </div>
       </div>
 
@@ -124,14 +206,37 @@ function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="year" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-card)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Area type="monotone" dataKey="value" name="Revenue" stroke="var(--brand-emerald)" strokeWidth={2} fill="url(#revGrad)" />
-                <Area type="monotone" dataKey="ebitda" name="EBITDA" stroke="var(--brand-gold)" strokeWidth={2} fill="url(#ebitdaGrad)" />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  name="Revenue"
+                  stroke="var(--brand-emerald)"
+                  strokeWidth={2}
+                  fill="url(#revGrad)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="ebitda"
+                  name="EBITDA"
+                  stroke="var(--brand-gold)"
+                  strokeWidth={2}
+                  fill="url(#ebitdaGrad)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="w-full h-[260px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+            <div className="w-full h-[260px] flex items-center justify-center text-muted-foreground text-sm">
+              Loading...
+            </div>
           )}
         </Card>
 
@@ -146,12 +251,21 @@ function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
-                <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-card)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
                 <Bar dataKey="dscr" fill="var(--brand-emerald)" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="w-full h-[260px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+            <div className="w-full h-[260px] flex items-center justify-center text-muted-foreground text-sm">
+              Loading...
+            </div>
           )}
         </Card>
       </div>
@@ -164,20 +278,37 @@ function Dashboard() {
               <h3 className="font-semibold">Upcoming Milestones</h3>
               <p className="text-xs text-muted-foreground">Critical path to issuance</p>
             </div>
-            <Button variant="ghost" size="sm">View all</Button>
+            <Button variant="ghost" size="sm">
+              View all
+            </Button>
           </div>
           <div className="divide-y">
             {MILESTONES.slice(0, 7).map((m) => (
               <div key={m.id} className="py-3 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{m.name}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{m.owner} · Due {m.due}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {m.owner} · Due {m.due}
+                  </div>
                 </div>
                 <div className="w-32">
-                  <ProgressBar value={m.progress} tone={m.status === "overdue" ? "danger" : m.status === "in_progress" ? "gold" : "emerald"} />
+                  <ProgressBar
+                    value={m.progress}
+                    tone={m.status === "overdue" ? "danger" : m.status === "in_progress" ? "gold" : "emerald"}
+                  />
                   <div className="text-[10px] text-muted-foreground mt-1 text-right">{m.progress}%</div>
                 </div>
-                <Pill tone={m.status === "completed" ? "success" : m.status === "overdue" ? "danger" : m.status === "in_progress" ? "warning" : "neutral"}>
+                <Pill
+                  tone={
+                    m.status === "completed"
+                      ? "success"
+                      : m.status === "overdue"
+                        ? "danger"
+                        : m.status === "in_progress"
+                          ? "warning"
+                          : "neutral"
+                  }
+                >
                   {m.status.replace("_", " ")}
                 </Pill>
               </div>
@@ -193,10 +324,14 @@ function Dashboard() {
           <div className="space-y-3">
             {GAP_ANALYSIS.map((g) => (
               <div key={g.item} className="flex items-start gap-2">
-                <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${g.severity === "High" ? "text-destructive" : "text-[color-mix(in_oklab,var(--warning)_50%,black)]"}`} />
+                <AlertTriangle
+                  className={`h-4 w-4 mt-0.5 shrink-0 ${g.severity === "High" ? "text-destructive" : "text-[color-mix(in_oklab,var(--warning)_50%,black)]"}`}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium">{g.item}</div>
-                  <div className="text-[11px] text-muted-foreground">{g.severity} · {g.owner}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {g.severity} · {g.owner}
+                  </div>
                 </div>
               </div>
             ))}
