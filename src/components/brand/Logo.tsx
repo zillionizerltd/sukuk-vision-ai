@@ -28,7 +28,7 @@ export function SukukDataRoomLogo({ inverted = false }: { inverted?: boolean }) 
       <img
         src={agrofeedLogo.url}
         alt="Agrofeed Global"
-        className="h-11 w-auto max-w-[150px] shrink-0 rounded-lg bg-white object-contain px-1.5 py-1 sm:h-12 sm:max-w-[180px]"
+        className="h-12 w-auto max-w-[168px] shrink-0 rounded-lg bg-white object-contain px-2 py-1 sm:h-14 sm:max-w-[210px]"
       />
       <div className="min-w-0 border-l border-gold/40 pl-3 leading-none sm:pl-4">
 
