@@ -4,7 +4,7 @@
 const { mkdirSync, cpSync, existsSync } = require("fs");
 const { join } = require("path");
 
-const rawBase = process.env.VITE_BASE_PATH ?? "/dataroom/";
+const rawBase = process.env.VITE_BASE_PATH ?? "/";
 const subpath = rawBase.replace(/^\//, "").replace(/\/$/, "");
 
 if (!subpath) {
