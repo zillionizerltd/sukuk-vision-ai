@@ -74,7 +74,7 @@ function UsersPage() {
   const [inviteName, setInviteName] = useState("");
   const [inviteOrg, setInviteOrg] = useState<string>(ORGS[0]);
   const [inviteRole, setInviteRole] = useState<Role>("member");
-  const [inviteMode, setInviteMode] = useState<"invite" | "create">("invite");
+  const [inviteMode, setInviteMode] = useState<"invite" | "create">("create");
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteFeedback, setInviteFeedback] = useState<{
     type: "success" | "error";
@@ -240,26 +240,25 @@ function UsersPage() {
           <div className="inline-flex rounded-lg bg-secondary p-1 text-xs">
             <button
               type="button"
-              onClick={() => setInviteMode("invite")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${
-                inviteMode === "invite"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Mail className="h-3.5 w-3.5" /> Send Invite Email
-            </button>
-            <button
-              type="button"
               onClick={() => setInviteMode("create")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${
-                inviteMode === "create"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${inviteMode === "create"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <Key className="h-3.5 w-3.5" /> Create Direct Account
             </button>
+            <button
+              type="button"
+              onClick={() => setInviteMode("invite")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition ${inviteMode === "invite"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              <Mail className="h-3.5 w-3.5" /> Send Invite Email
+            </button>
+
           </div>
         </div>
 
@@ -339,11 +338,10 @@ function UsersPage() {
 
           {inviteFeedback && (
             <div
-              className={`rounded-lg border px-4 py-3 text-sm space-y-2.5 ${
-                inviteFeedback.type === "success"
+              className={`rounded-lg border px-4 py-3 text-sm space-y-2.5 ${inviteFeedback.type === "success"
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                   : "border-destructive/30 bg-destructive/10 text-destructive"
-              }`}
+                }`}
             >
               <div className="flex items-start gap-2.5">
                 {inviteFeedback.type === "success" ? (
@@ -480,11 +478,10 @@ function UsersPage() {
                           onClick={() => toggle(u.id, r, has)}
                           disabled={busy === key}
                           aria-label={`${has ? "Remove" : "Grant"} ${r} for ${u.full_name || u.id}`}
-                          className={`h-6 w-6 inline-flex items-center justify-center rounded border transition ${
-                            has
+                          className={`h-6 w-6 inline-flex items-center justify-center rounded border transition ${has
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-input hover:bg-secondary"
-                          } ${busy === key ? "opacity-50" : ""}`}
+                            } ${busy === key ? "opacity-50" : ""}`}
                         >
                           {has && <Check className="h-3.5 w-3.5" />}
                         </button>
