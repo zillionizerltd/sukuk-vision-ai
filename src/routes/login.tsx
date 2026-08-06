@@ -120,32 +120,36 @@ function LoginPage() {
 
       <div className="relative z-10 min-h-screen grid lg:grid-cols-2">
         {/* Left: value proposition */}
-        <div className="hidden lg:flex flex-col justify-between px-16 py-12 text-white">
+        <div className="hidden lg:flex flex-col justify-between gap-10 px-8 py-10 xl:px-16 xl:py-12 text-white">
           <div>
             <SukukDataRoomLogo inverted />
           </div>
 
-          <div className="max-w-xl">
-            <h1 className="text-6xl font-semibold leading-[1.05] tracking-tight">
+          <div className="min-w-0 max-w-xl">
+            <h1 className="text-4xl xl:text-6xl font-semibold leading-[1.08] tracking-tight text-balance">
               Trusted access.
               <br />
               <span className="text-gold">Secure opportunities.</span>
             </h1>
-            <div className="mt-7 h-1.5 w-20 rounded-full bg-gold" />
-            <p className="mt-7 text-xl text-white/85 leading-relaxed">
+            <div className="mt-6 h-1.5 w-20 rounded-full bg-gold" />
+            <p className="mt-6 text-lg xl:text-xl text-white/85 leading-relaxed text-pretty">
               The Sukuk Data Room for secure collaboration, document sharing, and investor due
               diligence.
             </p>
 
-            <div className="mt-12 space-y-6">
+            <div className="mt-10 space-y-5 xl:space-y-6">
               {features.map((feature) => (
-                <div key={feature.title} className="flex items-start gap-5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10">
-                    <feature.icon className="h-6 w-6 text-gold" />
+                <div key={feature.title} className="flex items-start gap-4 xl:gap-5">
+                  <div className="flex h-11 w-11 xl:h-12 xl:w-12 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10">
+                    <feature.icon className="h-5 w-5 xl:h-6 xl:w-6 text-gold" />
                   </div>
-                  <div>
-                    <div className="text-lg font-semibold text-white">{feature.title}</div>
-                    <div className="text-base text-white/70">{feature.description}</div>
+                  <div className="min-w-0">
+                    <div className="text-base xl:text-lg font-semibold text-white">
+                      {feature.title}
+                    </div>
+                    <div className="text-sm xl:text-base text-white/70 text-pretty">
+                      {feature.description}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -153,21 +157,25 @@ function LoginPage() {
           </div>
 
           <div className="text-xs text-white/50 flex items-center gap-2">
-            <ShieldCheck className="h-3.5 w-3.5 text-gold" />© SUKUK DATA ROOM. All rights reserved.
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-gold" />
+            <span className="truncate">© SUKUK DATA ROOM. All rights reserved.</span>
           </div>
         </div>
 
         {/* Right: sign-in card */}
-        <div className="flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-[460px] rounded-2xl bg-white p-8 lg:p-10 shadow-elevated">
-            <div className="lg:hidden mb-8">
+        <div className="flex items-center justify-center p-4 sm:p-6 lg:p-12">
+          <div className="w-full max-w-[460px] rounded-2xl bg-white p-5 sm:p-8 lg:p-10 shadow-elevated">
+            <div className="lg:hidden mb-6 sm:mb-8">
               <SukukDataRoomLogo />
             </div>
 
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-navy">Welcome back</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+
+            <div className="grid grid-cols-1 gap-1 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:justify-between lg:gap-4">
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-navy">
+                  Welcome back
+                </h2>
+                <p className="mt-1 text-[13px] sm:text-sm text-muted-foreground text-pretty">
                   Sign in to access the Sukuk Data Room
                 </p>
               </div>
@@ -177,12 +185,13 @@ function LoginPage() {
                   href="mailto:admin@agrofeedglobal.com?subject=Request%20invitation%20to%20Sukuk%20Data%20Room"
                   className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-gold/80 transition-colors"
                 >
-                  Request invitation <ArrowRight className="h-3.5 w-3.5" />
+                  Request invitation <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </a>
               </div>
             </div>
 
-            <form onSubmit={submit} className="mt-8 space-y-5">
+            <form onSubmit={submit} className="mt-6 sm:mt-8 space-y-4 sm:space-y-5">
+
               <label className="block text-sm">
                 <span className="font-medium text-foreground">Work email</span>
                 <div className="relative mt-2">

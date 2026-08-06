@@ -1,16 +1,21 @@
+import agrofeedLogo from "@/assets/agrofeed-logo.jpg.asset.json";
+
 export function AgrofeedLogo({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="relative flex h-9 w-9 items-center justify-center rounded-lg gradient-emerald shadow-md">
-        <span className="text-lg font-bold text-primary-foreground">A</span>
-        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-gold ring-2 ring-sidebar" />
-      </div>
+    <div className="flex min-w-0 items-center gap-2.5">
+      <img
+        src={agrofeedLogo.url}
+        alt="Agrofeed Global"
+        className="h-9 w-9 shrink-0 rounded-lg bg-white object-contain p-0.5 shadow-md"
+      />
       {!compact && (
-        <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-tight text-sidebar-foreground">
+        <div className="min-w-0 leading-tight">
+          <div className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
             Agrofeed Global
           </div>
-          <div className="text-[10px] uppercase tracking-widest text-gold">Sukuk Data Room</div>
+          <div className="truncate text-[10px] uppercase tracking-widest text-gold">
+            Sukuk Data Room
+          </div>
         </div>
       )}
     </div>
@@ -19,34 +24,20 @@ export function AgrofeedLogo({ compact = false }: { compact?: boolean }) {
 
 export function SukukDataRoomLogo({ inverted = false }: { inverted?: boolean }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gold/15 ring-1 ring-gold/30">
-        <svg viewBox="0 0 40 40" fill="none" className="h-7 w-7" aria-hidden="true">
-          <path
-            d="M20 2L23.5 16.5L38 20L23.5 23.5L20 38L16.5 23.5L2 20L16.5 16.5L20 2Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className={inverted ? "text-gold" : "text-gold"}
-            fill="none"
-          />
-          <circle
-            cx="20"
-            cy="20"
-            r="5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className={inverted ? "text-gold" : "text-gold"}
-            fill="none"
-          />
-        </svg>
-      </div>
-      <div className="leading-none">
+    <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+      <img
+        src={agrofeedLogo.url}
+        alt="Agrofeed Global"
+        className="h-12 w-auto max-w-[168px] shrink-0 rounded-lg bg-white object-contain px-2 py-1 sm:h-14 sm:max-w-[210px]"
+      />
+      <div className="min-w-0 border-l border-gold/40 pl-3 leading-none sm:pl-4">
+
         <div
-          className={`text-[22px] font-semibold tracking-tight ${inverted ? "text-white" : "text-navy"}`}
+          className={`truncate text-lg font-semibold tracking-tight sm:text-[22px] ${inverted ? "text-white" : "text-navy"}`}
         >
           SUKUK
         </div>
-        <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-gold">
+        <div className="truncate text-[10px] font-medium uppercase tracking-[0.18em] text-gold sm:text-[11px] sm:tracking-[0.2em]">
           Data Room
         </div>
       </div>
