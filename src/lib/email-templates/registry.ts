@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { template as tempPasswordTemplate } from './temp-password'
 
 export interface TemplateEntry {
   component: ComponentType<any>
