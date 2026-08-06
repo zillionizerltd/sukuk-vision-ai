@@ -2,13 +2,15 @@
 // or the app will break with duplicate plugins.
 import path from "node:path";
 
-// Deployed under https://agrofeedglobal.com/dataroom.
-// IMPORTANT: static files are served from the origin ROOT (/assets/*), so Vite's
-// `base` must stay "/" — prefixing it with /dataroom/ makes every CSS/JS request
-// fall through to SSR and return HTML (MIME-type errors in the browser).
-// The URL prefix is applied by the ROUTER basepath instead (see src/router.tsx),
-// driven by VITE_ROUTER_BASEPATH.
-const BASE = "/";
+// Deployed under https://agrofeedglobal.com/dataroom:
+//   VITE_BASE_PATH=/dataroom/ (see .env)
+// Static files are emitted to dist/client/assets and must ALSO exist at
+// dist/client/dataroom/assets — scripts/postbuild.cjs copies them there.
+// Without that copy, /dataroom/assets/*.css falls through to SSR and the
+// browser rejects it as text/html.
+const rawBase = process.env.VITE_BASE_PATH ?? "/dataroom/";
+const BASE = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
+
 
 
 export default async (env: any) => {
