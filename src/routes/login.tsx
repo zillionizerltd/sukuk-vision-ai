@@ -104,12 +104,12 @@ function LoginPage() {
       {/* Full-bleed background */}
       <img
         src={dubaiSkyline}
-        alt="Dubai skyline at dusk overlooking the financial district"
+        alt="Dubai skyline at daytime overlooking the financial district"
         width={1920}
         height={1080}
         className="absolute inset-0 h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-navy/80" />
+      <div className="absolute inset-0 bg-navy/75" />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -125,27 +125,27 @@ function LoginPage() {
             <SukukDataRoomLogo inverted />
           </div>
 
-          <div className="max-w-lg">
-            <h1 className="text-5xl font-semibold leading-[1.1] tracking-tight">
+          <div className="max-w-xl">
+            <h1 className="text-6xl font-semibold leading-[1.05] tracking-tight">
               Trusted access.
               <br />
               <span className="text-gold">Secure opportunities.</span>
             </h1>
-            <div className="mt-6 h-1 w-16 rounded-full bg-gold" />
-            <p className="mt-6 text-lg text-white/80 leading-relaxed">
+            <div className="mt-7 h-1.5 w-20 rounded-full bg-gold" />
+            <p className="mt-7 text-xl text-white/85 leading-relaxed">
               The Sukuk Data Room for secure collaboration, document sharing, and investor due
               diligence.
             </p>
 
-            <div className="mt-10 space-y-5">
+            <div className="mt-12 space-y-6">
               {features.map((feature) => (
-                <div key={feature.title} className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10">
-                    <feature.icon className="h-5 w-5 text-gold" />
+                <div key={feature.title} className="flex items-start gap-5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10">
+                    <feature.icon className="h-6 w-6 text-gold" />
                   </div>
                   <div>
-                    <div className="font-semibold text-white">{feature.title}</div>
-                    <div className="text-sm text-white/70">{feature.description}</div>
+                    <div className="text-lg font-semibold text-white">{feature.title}</div>
+                    <div className="text-base text-white/70">{feature.description}</div>
                   </div>
                 </div>
               ))}
