@@ -1,15 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  Banknote,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Banknote, Eye, EyeOff, Lock, Mail, ShieldCheck, Users } from "lucide-react";
 import { SukukDataRoomLogo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,7 +133,8 @@ function LoginPage() {
             </h1>
             <div className="mt-6 h-1 w-16 rounded-full bg-gold" />
             <p className="mt-6 text-lg text-white/80 leading-relaxed">
-              The Sukuk Data Room for secure collaboration, document sharing, and investor due diligence.
+              The Sukuk Data Room for secure collaboration, document sharing, and investor due
+              diligence.
             </p>
 
             <div className="mt-10 space-y-5">
@@ -161,8 +153,7 @@ function LoginPage() {
           </div>
 
           <div className="text-xs text-white/50 flex items-center gap-2">
-            <ShieldCheck className="h-3.5 w-3.5 text-gold" />
-            © SUKUK DATA ROOM. All rights reserved.
+            <ShieldCheck className="h-3.5 w-3.5 text-gold" />© SUKUK DATA ROOM. All rights reserved.
           </div>
         </div>
 
@@ -180,15 +171,15 @@ function LoginPage() {
                   Sign in to access the Sukuk Data Room
                 </p>
               </div>
-                <div className="hidden lg:block text-right whitespace-nowrap">
-                  <div className="text-xs text-muted-foreground">New here?</div>
-                  <a
-                    href="mailto:admin@agrofeedglobal.com?subject=Request%20invitation%20to%20Sukuk%20Data%20Room"
-                    className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-gold/80 transition-colors"
-                  >
-                    Request invitation <ArrowRight className="h-3.5 w-3.5" />
-                  </a>
-                </div>
+              <div className="hidden lg:block text-right whitespace-nowrap">
+                <div className="text-xs text-muted-foreground">New here?</div>
+                <a
+                  href="mailto:admin@agrofeedglobal.com?subject=Request%20invitation%20to%20Sukuk%20Data%20Room"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-gold hover:text-gold/80 transition-colors"
+                >
+                  Request invitation <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
             </div>
 
             <form onSubmit={submit} className="mt-8 space-y-5">
@@ -261,7 +252,12 @@ function LoginPage() {
                 </div>
               )}
 
-              <Button variant="gold" className="w-full h-12 text-base" type="submit" disabled={busy}>
+              <Button
+                variant="gold"
+                className="w-full h-12 text-base"
+                type="submit"
+                disabled={busy}
+              >
                 {busy ? "Please wait…" : "Sign in"}
               </Button>
 
@@ -309,7 +305,8 @@ function LoginPage() {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Invitation-only access</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Access is restricted to authorized stakeholders only. New accounts and roles are managed by Data Room administrators.
+                    Access is restricted to authorized stakeholders only. New accounts and roles are
+                    managed by Data Room administrators.
                   </p>
                 </div>
               </div>
