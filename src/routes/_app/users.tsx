@@ -12,7 +12,7 @@ import {
   useDeleteOrganisation,
 } from "@/hooks/use-organisations";
 import { RoleDefinitionsPanel } from "@/components/admin/RoleDefinitionsPanel";
-import { FOLDERS } from "@/lib/demo-data";
+import { useFolders } from "@/hooks/use-modules";
 import {
   ShieldCheck,
   Check,
@@ -61,6 +61,7 @@ function UsersPage() {
   const createOrg = useCreateOrganisation();
   const updateOrg = useUpdateOrganisation();
   const deleteOrg = useDeleteOrganisation();
+  const { data: FOLDERS = [] } = useFolders();
   const { data: access } = useFolderAccess();
   const toggleFolder = useToggleFolderAccess();
 

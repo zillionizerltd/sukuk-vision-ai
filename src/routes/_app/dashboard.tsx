@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Pill, Button, ProgressBar } from "@/components/ui/primitives";
 import { ReadinessGauge } from "@/components/dashboard/ReadinessGauge";
-import { KPIS, READINESS, NOTIFICATIONS, GAP_ANALYSIS, FINANCIALS } from "@/lib/demo-data";
-import { useMilestones } from "@/hooks/use-modules";
+import { useMilestones, useDashboardMetrics, useNotifications, useGapAnalysis, useFinancials } from "@/hooks/use-modules";
 import { ArrowUpRight, FileText, Flag, ShieldAlert, Users, Wallet, Calendar, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, BarChart, Bar, Legend } from "recharts";
 
@@ -38,6 +37,28 @@ function KPI({ icon: Icon, label, value, tone = "neutral", sub }: { icon: any; l
 
 function Dashboard() {
   const { data: MILESTONES = [] } = useMilestones();
+  const { data: metrics } = useDashboardMetrics();
+  const { data: NOTIFICATIONS = [] } = useNotifications();
+  const { data: GAP_ANALYSIS = [] } = useGapAnalysis();
+  const { data: FINANCIALS } = useFinancials();
+
+  const READINESS = metrics?.readiness || { overall: 0, breakdown: [] };
+  const KPIS = metrics?.kpis || {
+    totalDocuments: 0,
+    pendingReview: 0,
+    approved: 0,
+    missing: 0,
+    overdueMilestones: 0,
+    openCompliance: 0,
+    highRisk: 0,
+    pendingApprovals: 0,
+    activeUsers: 0,
+    estimatedSizeUsdM: 0,
+    expectedIssuance: "Q2 2026",
+    overallCompletion: 0,
+    investorPackage: 0,
+  };
+
   return (
     <>
       <PageHeader
@@ -87,27 +108,31 @@ function Dashboard() {
             </div>
             <TrendingUp className="h-4 w-4 text-primary" />
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={FINANCIALS.revenue.map((r, i) => ({ ...r, ebitda: FINANCIALS.ebitda[i].value }))}>
-              <defs>
-                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--brand-emerald)" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="var(--brand-emerald)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="ebitdaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--brand-gold)" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="var(--brand-gold)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
-              <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="value" name="Revenue" stroke="var(--brand-emerald)" strokeWidth={2} fill="url(#revGrad)" />
-              <Area type="monotone" dataKey="ebitda" name="EBITDA" stroke="var(--brand-gold)" strokeWidth={2} fill="url(#ebitdaGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          {FINANCIALS ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={FINANCIALS.revenue.map((r, i) => ({ ...r, ebitda: FINANCIALS.ebitda[i]?.value || 0 }))}>
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--brand-emerald)" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="var(--brand-emerald)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="ebitdaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--brand-gold)" stopOpacity={0.5} />
+                    <stop offset="100%" stopColor="var(--brand-gold)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Area type="monotone" dataKey="value" name="Revenue" stroke="var(--brand-emerald)" strokeWidth={2} fill="url(#revGrad)" />
+                <Area type="monotone" dataKey="ebitda" name="EBITDA" stroke="var(--brand-gold)" strokeWidth={2} fill="url(#ebitdaGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="w-full h-[260px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+          )}
         </Card>
 
         <Card>
@@ -115,15 +140,19 @@ function Dashboard() {
             <h3 className="font-semibold">Scenario DSCR</h3>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Debt service cover</span>
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={FINANCIALS.scenarios} layout="vertical" margin={{ left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
-              <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="dscr" fill="var(--brand-emerald)" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {FINANCIALS ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={FINANCIALS.scenarios} layout="vertical" margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
+                <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
+                <Bar dataKey="dscr" fill="var(--brand-emerald)" radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="w-full h-[260px] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+          )}
         </Card>
       </div>
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, Button } from "@/components/ui/primitives";
-import { FINANCIALS } from "@/lib/demo-data";
+import { useFinancials } from "@/hooks/use-modules";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 export const Route = createFileRoute("/_app/financials")({
@@ -19,7 +19,10 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
 }
 
 function Financials() {
-  const r = FINANCIALS.ratios;
+  const { data: FINANCIALS } = useFinancials();
+  const r = FINANCIALS?.ratios;
+  if (!r || !FINANCIALS) return null;
+  
   return (
     <>
       <PageHeader title="Financial Intelligence" subtitle="Revenue, EBITDA, ratios, scenarios, and stress testing"

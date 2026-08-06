@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_app/audit-trail")({
 });
 
 function Audit() {
-  const { data: AUDIT = [] } = useAudit();
+  const { data: AUDIT = [], isLoading } = useAudit();
   return (
     <>
       <PageHeader
@@ -28,14 +28,29 @@ function Audit() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {AUDIT.map((a) => (
-              <tr key={a.id} className="hover:bg-secondary/40">
-                <td className="px-4 py-3 tabular-nums text-muted-foreground font-mono text-xs">{a.at}</td>
-                <td className="px-4 py-3 font-medium">{a.user}</td>
-                <td className="px-4 py-3"><Pill tone={a.action === "Approved" ? "success" : a.action === "Downloaded" ? "info" : "neutral"}>{a.action}</Pill></td>
-                <td className="px-4 py-3 text-muted-foreground">{a.target}</td>
+            {isLoading ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                  Loading audit trail...
+                </td>
               </tr>
-            ))}
+            ) : AUDIT.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  No audit logs found.
+                </td>
+              </tr>
+            ) : (
+              AUDIT.map((a) => (
+                <tr key={a.id} className="hover:bg-secondary/40">
+                  <td className="px-4 py-3 tabular-nums text-muted-foreground font-mono text-xs">{a.at}</td>
+                  <td className="px-4 py-3 font-medium">{a.user}</td>
+                  <td className="px-4 py-3"><Pill tone={a.action === "Approved" ? "success" : a.action === "Downloaded" ? "info" : "neutral"}>{a.action}</Pill></td>
+                  <td className="px-4 py-3 text-muted-foreground">{a.target}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </Card>

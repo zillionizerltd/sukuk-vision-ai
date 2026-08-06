@@ -37,7 +37,7 @@ export function Sidebar() {
   const base = NAV.filter(
     (n) => isAdmin || isAgrofeed || !n.restricted || (isPartner && "partner" in n && n.partner),
   );
-
+  console.log(isAdmin)
   const items = isAdmin
     ? [...base, { to: "/users", label: "User Roles", icon: ShieldCheck } as const]
     : base;
