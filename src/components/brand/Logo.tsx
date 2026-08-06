@@ -24,13 +24,14 @@ export function AgrofeedLogo({ compact = false }: { compact?: boolean }) {
 
 export function SukukDataRoomLogo({ inverted = false }: { inverted?: boolean }) {
   return (
-    <div className="flex min-w-0 items-center gap-3">
+    <div className="flex min-w-0 items-center gap-3 sm:gap-4">
       <img
         src={agrofeedLogo.url}
         alt="Agrofeed Global"
-        className="h-11 w-11 shrink-0 rounded-xl bg-white object-contain p-1 ring-1 ring-gold/30"
+        className="h-11 w-auto max-w-[150px] shrink-0 rounded-lg bg-white object-contain px-1.5 py-1 sm:h-12 sm:max-w-[180px]"
       />
-      <div className="min-w-0 leading-none">
+      <div className="min-w-0 border-l border-gold/40 pl-3 leading-none sm:pl-4">
+
         <div
           className={`truncate text-lg font-semibold tracking-tight sm:text-[22px] ${inverted ? "text-white" : "text-navy"}`}
         >
