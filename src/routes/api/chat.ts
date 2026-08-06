@@ -29,6 +29,7 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const key = process.env.LOVABLE_API_KEY;
+        console.log(key, ">>>>>>>>> this the key")
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
         const context =
