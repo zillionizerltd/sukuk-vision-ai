@@ -626,7 +626,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_audit_event: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_target?: string
+          p_target_type?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "advisor" | "auditor" | "investor" | "member"

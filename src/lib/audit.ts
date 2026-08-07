@@ -18,28 +18,15 @@ export async function logAudit(
   } = {},
 ): Promise<void> {
   try {
-    const { data } = await supabase.auth.getUser();
-    const user = data.user;
-    if (!user) return;
-
-    let actorName = (user.user_metadata?.["full_name"] as string | undefined) ?? null;
-    if (!actorName) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .maybeSingle();
-      actorName = profile?.full_name ?? user.email ?? null;
-    }
-
-    await supabase.from("audit_log").insert({
-      actor_id: user.id,
-      actor_name: actorName ?? "System",
-      action,
-      target: opts.target ?? null,
-      target_type: opts.targetType ?? null,
-      details: (opts.details ?? null) as never,
+    // Actor identity (id + display name) is resolved server-side by the
+    // security-definer routine; clients cannot forge or attribute entries.
+    await supabase.rpc("record_audit_event", {
+      p_action: action,
+      p_target: opts.target ?? undefined,
+      p_target_type: opts.targetType ?? undefined,
+      p_details: (opts.details ?? null) as never,
     });
+
   } catch (err) {
     // Auditing must never break a user flow.
     console.warn("[audit] failed to record action", action, err);
