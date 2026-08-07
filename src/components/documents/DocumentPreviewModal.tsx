@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Pill } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
+import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/hooks/use-auth";
 import { useAddComment, useComments, useDeleteComment, type CommentRow } from "@/hooks/use-comments";
 import { Download, Loader2, MessageSquare, Reply, Trash2, X, ExternalLink } from "lucide-react";
@@ -70,6 +71,7 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
       }
       setUrl(data.signedUrl);
       setMime(row.mime_type);
+      void logAudit("Viewed", { target: doc.name, targetType: "documents", details: { document_id: doc.id } });
       // Fetch as a blob so the viewer works inside sandboxed/nested preview frames.
       try {
         const res = await fetch(data.signedUrl);
@@ -117,6 +119,7 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
       a.click();
       a.remove();
       if (revoke) setTimeout(() => URL.revokeObjectURL(objUrl!), 1000);
+      void logAudit("Downloaded", { target: doc.name, targetType: "documents", details: { document_id: doc.id } });
     } catch (e) {
       setError(`Download failed: ${(e as Error).message}`);
     }

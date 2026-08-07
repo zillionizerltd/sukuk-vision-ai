@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { logAudit } from "@/lib/audit";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Card, Button } from "@/components/ui/primitives";
@@ -140,6 +141,7 @@ export function AdvisorChat({
     if (!text || prompt == null || sentKey.current === prompt.key) return;
     sentKey.current = prompt.key;
     void sendMessage({ text });
+    void logAudit("AI query", { target: text.slice(0, 120), targetType: "ai_advisor" });
   }, [prompt, sendMessage]);
 
   const send = () => {
@@ -147,6 +149,7 @@ export function AdvisorChat({
     if (!text || busy) return;
     setInput("");
     void sendMessage({ text });
+    void logAudit("AI query", { target: text.slice(0, 120), targetType: "ai_advisor" });
   };
 
 
