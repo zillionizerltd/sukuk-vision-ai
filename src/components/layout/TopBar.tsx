@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, Sparkles, HelpCircle, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth, signOut } from "@/hooks/use-auth";
+import { logAudit } from "@/lib/audit";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAdvisor } from "@/components/advisor/AdvisorProvider";
 
@@ -33,6 +34,7 @@ export function TopBar() {
   const subtitle = user ? "Agrofeed Data Room" : "Not signed in";
 
   const handleSignOut = async () => {
+    await logAudit("Signed out", { target: user?.email ?? null, targetType: "auth" });
     await signOut();
     setOpen(false);
     navigate({ to: "/login" });

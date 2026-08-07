@@ -6,6 +6,7 @@ import { useDocuments, useFolders } from "@/hooks/use-modules";
 import { useFolderAccess, allowedFolders, useToggleFolderAccess } from "@/hooks/use-folder-access";
 import { useOrganisations } from "@/hooks/use-organisations";
 import { supabase } from "@/integrations/supabase/client";
+import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/hooks/use-auth";
 import { DocumentPreviewModal, type PreviewDoc } from "@/components/documents/DocumentPreviewModal";
 import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye, FolderPlus, Settings } from "lucide-react";
@@ -193,6 +194,7 @@ function Documents() {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+      void logAudit("Downloaded", { target: name, targetType: "documents", details: { document_id: id } });
     } catch (e) {
       setMsg(`Download failed: ${(e as Error).message}`);
     }

@@ -5,6 +5,7 @@ import { SukukDataRoomLogo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/primitives";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { logAudit } from "@/lib/audit";
 import dubaiSkyline from "@/assets/dubai-skyline.jpg";
 
 export const Route = createFileRoute("/login")({
@@ -43,6 +44,7 @@ function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      await logAudit("Signed in", { target: email, targetType: "auth", details: { method: "password" } });
       navigate({ to: "/dashboard" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
