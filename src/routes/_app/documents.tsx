@@ -56,10 +56,9 @@ function Documents() {
 
   const createFolderMut = useMutation({
     mutationFn: async ({ folder, accessOrgs }: { folder: string, accessOrgs: string[] }) => {
-      const inserts = [
-        { org: "Agrofeed Global", folder },
-        ...accessOrgs.map(org => ({ org, folder }))
-      ];
+      const allOrgs = new Set(["Agrofeed Global", ...accessOrgs]);
+      if (profile?.org) allOrgs.add(profile.org);
+      const inserts = Array.from(allOrgs).map(org => ({ org, folder }));
       const { error } = await supabase.from("folder_access").insert(inserts);
       if (error) throw error;
     },
@@ -362,15 +361,13 @@ function Documents() {
         <Card className="max-h-[70vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">Folders</h3>
-            {canWrite && (
-              <button
-                onClick={() => setNewFolderOpen(true)}
-                className="text-[11px] font-medium text-primary hover:underline flex items-center gap-1"
-              >
-                <FolderPlus className="h-3.5 w-3.5" />
-                New
-              </button>
-            )}
+            <button
+              onClick={() => setNewFolderOpen(true)}
+              className="text-[11px] font-medium text-primary hover:underline flex items-center gap-1"
+            >
+              <FolderPlus className="h-3.5 w-3.5" />
+              New
+            </button>
           </div>
           <button onClick={() => setSelected(null)} className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-secondary ${!selected ? "bg-secondary font-medium" : ""}`}>
             <FolderOpen className="h-4 w-4 text-gold" />

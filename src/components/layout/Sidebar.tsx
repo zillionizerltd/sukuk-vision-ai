@@ -25,7 +25,7 @@ const NAV: NavItem[] = [
     to: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
-    roles: ["admin", "advisor"],
+    roles: ["admin", "advisor", "auditor", "investor", "member"],
   },
   {
     to: "/documents",
