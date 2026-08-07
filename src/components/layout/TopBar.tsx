@@ -46,31 +46,37 @@ export function TopBar() {
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
 
-        <div className="relative flex-1 max-w-xl">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            const text = query.trim();
+            if (!text) return;
+            setQuery("");
+            advisor.open(text);
+          }}
+          className="relative flex-1 max-w-xl"
+        >
+          <button type="submit" aria-label="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+            <Search className="h-4 w-4" />
+          </button>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                const text = query.trim();
-                if (!text) return;
-                setQuery("");
-                advisor.open(text);
-              }
-            }}
             placeholder="Search documents, milestones, ask a question…"
             className="w-full h-10 rounded-lg border border-input bg-secondary/40 pl-9 pr-3 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background"
           />
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden lg:block text-[10px] text-muted-foreground">
             Enter to ask AI
           </span>
-        </div>
+        </form>
 
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => advisor.open()}
+            onClick={() => {
+              const text = query.trim();
+              if (text) setQuery("");
+              advisor.open(text || undefined);
+            }}
             className="hidden sm:inline-flex items-center gap-1.5 rounded-lg gradient-emerald px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-95 transition"
           >
             <Sparkles className="h-4 w-4" />

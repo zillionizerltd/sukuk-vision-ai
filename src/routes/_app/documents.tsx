@@ -12,6 +12,7 @@ import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, L
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({ meta: [{ title: "Data Room · Documents · Agrofeed Sukuk" }, { name: "description", content: "Secure document repository with AI analysis." }] }),
@@ -33,6 +34,7 @@ function Documents() {
   const [previewDoc, setPreviewDoc] = useState<PreviewDoc | null>(null);
   const [q, setQ] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const { data: FOLDERS = [] } = useFolders();
   const [uploadFolder, setUploadFolder] = useState<string>("");
   const [uploads, setUploads] = useState<UploadItem[]>([]);
@@ -76,7 +78,11 @@ function Documents() {
     createFolderMut.mutate({ folder: newFolderName.trim(), accessOrgs: newFolderAccess });
   };
 
-  const filtered = DOCUMENTS.filter((d) => (!selected || d.folder === selected) && (!q || d.name.toLowerCase().includes(q.toLowerCase())));
+  const filtered = DOCUMENTS.filter((d) => 
+    (!selected || d.folder === selected) && 
+    (!q || d.name.toLowerCase().includes(q.toLowerCase())) &&
+    (statusFilter.length === 0 || statusFilter.includes(d.status))
+  );
 
 
   const updateUpload = (id: string, patch: Partial<UploadItem>) =>
@@ -229,7 +235,36 @@ function Documents() {
                 ))}
               </select>
             </label>
-            <Button variant="secondary" size="sm"><Filter className="h-3.5 w-3.5" />Filter</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="sm">
+                  <Filter className="h-3.5 w-3.5" />
+                  Filter
+                  {statusFilter.length > 0 && (
+                    <span className="ml-1 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      {statusFilter.length}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {["draft", "in_review", "approved", "expired"].map((s) => (
+                  <DropdownMenuCheckboxItem
+                    key={s}
+                    checked={statusFilter.includes(s)}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter((prev) =>
+                        checked ? [...prev, s] : prev.filter((v) => v !== s)
+                      );
+                    }}
+                  >
+                    {s.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingCount > 0}>
               {uploadingCount > 0 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
               {uploadingCount > 0 ? `Uploading ${uploadingCount}…` : "Upload documents"}
