@@ -22,8 +22,8 @@ export async function logAudit(
     // security-definer routine; clients cannot forge or attribute entries.
     await supabase.rpc("record_audit_event", {
       p_action: action,
-      p_target: opts.target ?? null,
-      p_target_type: opts.targetType ?? null,
+      p_target: opts.target ?? undefined,
+      p_target_type: opts.targetType ?? undefined,
       p_details: (opts.details ?? null) as never,
     });
 
