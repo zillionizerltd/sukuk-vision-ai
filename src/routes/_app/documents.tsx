@@ -47,7 +47,7 @@ function Documents() {
   const [accessModalFolder, setAccessModalFolder] = useState<string | null>(null);
 
   const { data: DOCUMENTS = [] } = useDocuments();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const { data: access } = useFolderAccess();
   const { data: orgs = [] } = useOrganisations();
   const qc = useQueryClient();
@@ -498,29 +498,31 @@ function Documents() {
               />
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Initial Access (Optional)</label>
-              <p className="text-xs text-muted-foreground">Select organizations that should have immediate access to this folder.</p>
-              <div className="space-y-3 max-h-[30vh] overflow-y-auto pr-2 mt-2">
-                {orgs.filter(o => o.name !== "Agrofeed Global").map(o => {
-                  const hasAccess = newFolderAccess.includes(o.name);
-                  return (
-                    <div key={o.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/30">
-                      <div>
-                        <div className="text-sm font-medium">{o.name}</div>
+            {isAdmin && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Initial Access (Optional)</label>
+                <p className="text-xs text-muted-foreground">Select organizations that should have immediate access to this folder.</p>
+                <div className="space-y-3 max-h-[30vh] overflow-y-auto pr-2 mt-2">
+                  {orgs.filter(o => o.name !== "Agrofeed Global").map(o => {
+                    const hasAccess = newFolderAccess.includes(o.name);
+                    return (
+                      <div key={o.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/30">
+                        <div>
+                          <div className="text-sm font-medium">{o.name}</div>
+                        </div>
+                        <Switch
+                          checked={hasAccess}
+                          onCheckedChange={(checked) => {
+                            if (checked) setNewFolderAccess(prev => [...prev, o.name]);
+                            else setNewFolderAccess(prev => prev.filter(name => name !== o.name));
+                          }}
+                        />
                       </div>
-                      <Switch
-                        checked={hasAccess}
-                        onCheckedChange={(checked) => {
-                          if (checked) setNewFolderAccess(prev => [...prev, o.name]);
-                          else setNewFolderAccess(prev => prev.filter(name => name !== o.name));
-                        }}
-                      />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             <DialogFooter>
               <Button type="button" variant="secondary" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
