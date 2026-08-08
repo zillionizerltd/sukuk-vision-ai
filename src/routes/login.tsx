@@ -131,7 +131,7 @@ function LoginPage() {
             <h1 className="text-4xl xl:text-6xl font-semibold leading-[1.08] tracking-tight text-balance">
               Trusted access.
               <br />
-              <span className="text-gold">Secure opportunities.</span>
+              <span className="text-gold">& Data Sharing.</span>
             </h1>
             <div className="mt-6 h-1.5 w-20 rounded-full bg-gold" />
             <p className="mt-6 text-lg xl:text-xl text-white/85 leading-relaxed text-pretty">
