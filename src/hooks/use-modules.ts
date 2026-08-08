@@ -194,8 +194,10 @@ export function useRisks() {
 
 // ---------- Stakeholders ----------
 export type StakeholderRow = {
+  id: string;
   org: string;
   role: string;
+  contact_email: string | null;
   pending: number;
   completed: number;
   users: number;
@@ -207,8 +209,10 @@ export function useStakeholders() {
       const { data, error } = await supabase.from("stakeholders").select("*");
       if (error) throw error;
       return (data ?? []).map((s) => ({
+        id: s.id,
         org: s.org,
         role: s.role ?? "",
+        contact_email: s.contact_email ?? null,
         pending: s.pending ?? 0,
         completed: s.completed ?? 0,
         users: s.users_count ?? 0,
