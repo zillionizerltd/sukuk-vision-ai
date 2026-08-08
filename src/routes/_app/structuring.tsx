@@ -92,7 +92,7 @@ function CompareModal({ structures, onClose }: { structures: StructureRow[]; onC
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 function Structuring() {
-  const { data: SUKUK_STRUCTURES = [], isFetching } = useStructures();
+  const { data: SUKUK_STRUCTURES = [], isFetching, isLoading } = useStructures();
   const qc = useQueryClient();
   const [showCompare, setShowCompare] = useState(false);
   const [rerunState, setRerunState] = useState<"idle" | "running" | "done">("idle");
@@ -143,33 +143,44 @@ function Structuring() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {SUKUK_STRUCTURES.map((s, i) => (
-          <Card key={s.name}>
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{s.name}</h3>
-                  {i === 0 && <Pill tone="gold">AI top pick</Pill>}
+        {isLoading ? (
+          <div className="lg:col-span-2 py-10 flex items-center justify-center gap-2 text-muted-foreground text-sm">
+            <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+            Loading structures...
+          </div>
+        ) : SUKUK_STRUCTURES.length === 0 ? (
+          <div className="lg:col-span-2 text-center py-10 text-muted-foreground text-sm">
+            No structures found.
+          </div>
+        ) : (
+          SUKUK_STRUCTURES.map((s, i) => (
+            <Card key={s.name}>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{s.name}</h3>
+                    {i === 0 && <Pill tone="gold">AI top pick</Pill>}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.note}</p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.note}</p>
+                <div className="text-right shrink-0">
+                  <div className="text-3xl font-semibold tabular-nums">{s.suitability}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Suitability</div>
+                </div>
               </div>
-              <div className="text-right shrink-0">
-                <div className="text-3xl font-semibold tabular-nums">{s.suitability}</div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Suitability</div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[11px] text-muted-foreground"><span>Match</span><span className="tabular-nums">{s.suitability}%</span></div>
+                <ProgressBar value={s.suitability} tone="emerald" />
+                <div className="flex justify-between text-[11px] text-muted-foreground"><span>Confidence</span><span className="tabular-nums">{s.confidence}%</span></div>
+                <ProgressBar value={s.confidence} tone="gold" />
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[11px] text-muted-foreground"><span>Match</span><span className="tabular-nums">{s.suitability}%</span></div>
-              <ProgressBar value={s.suitability} tone="emerald" />
-              <div className="flex justify-between text-[11px] text-muted-foreground"><span>Confidence</span><span className="tabular-nums">{s.confidence}%</span></div>
-              <ProgressBar value={s.confidence} tone="gold" />
-            </div>
-            <div className="mt-4 pt-3 border-t flex items-center justify-between">
-              <div className="text-[11px] text-muted-foreground">Requires assets, Sharia-compliant contracts &amp; investor eligibility</div>
-              <Button variant="ghost" size="sm" onClick={() => setShowCompare(true)}>Details</Button>
-            </div>
-          </Card>
-        ))}
+              <div className="mt-4 pt-3 border-t flex items-center justify-between">
+                <div className="text-[11px] text-muted-foreground">Requires assets, Sharia-compliant contracts &amp; investor eligibility</div>
+                <Button variant="ghost" size="sm" onClick={() => setShowCompare(true)}>Details</Button>
+              </div>
+            </Card>
+          ))
+        )}
       </div>
     </>
   );

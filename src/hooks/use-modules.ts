@@ -313,7 +313,7 @@ export function useDashboardMetrics() {
         supabase.from("compliance_items").select("status"),
         supabase.from("risks").select("impact, likelihood"),
         supabase.from("stakeholders").select("pending, completed, users_count"),
-        supabase.from("sukuk_structures").select("size_musd")
+        supabase.from("sukuk_structures").select("size_musd, tenor_years, status, name")
       ]);
 
       const now = new Date();
@@ -329,8 +329,7 @@ export function useDashboardMetrics() {
       const totalDocuments = documents?.length ?? 0;
       const approvedDocs = (documents ?? []).filter(d => d.status === "approved").length;
       const pendingReviewDocs = (documents ?? []).filter(d => d.status === "in_review" || d.status === "pending").length;
-
-      const activeUsers = (stakeholders ?? []).reduce((acc, s) => acc + (s.users_count ?? 0), 0) || 5;
+      const activeUsers = (stakeholders ?? []).reduce((acc, s) => acc + (s.users_count ?? 0), 0) || 1;
 
       // Readiness Breakdown calculation:
       const categories = [
@@ -344,7 +343,7 @@ export function useDashboardMetrics() {
         if (catDocs.length > 0) {
           val = Math.round((catDocs.filter(d => d.status === "approved").length / catDocs.length) * 100);
         } else {
-          val = 40 + (key.length * 5) % 40; // pseudo-random fallback for empty categories
+          val = 0 + (key.length * 5) % 5 // pseudo-random fallback for empty categories
         }
         return { key, value: val };
       });
@@ -359,16 +358,22 @@ export function useDashboardMetrics() {
           totalDocuments,
           pendingReview: pendingReviewDocs,
           approved: approvedDocs,
-          missing: 3,
+          missing: 0,
           overdueMilestones,
           openCompliance: (compliance ?? []).filter(c => c.status !== "completed").length,
           highRisk,
           pendingApprovals: pendingReviewDocs,
           activeUsers,
-          estimatedSizeUsdM: structures?.[0]?.size_musd ?? 250,
-          expectedIssuance: "Q2 2026",
-          overallCompletion: 45,
-          investorPackage: 60,
+          estimatedSizeUsdM: structures?.[0]?.size_musd ?? 0,
+          expectedIssuance: structures?.[0]?.tenor_years ? `${structures[0].tenor_years}yr tenor` : "—",
+          overallCompletion: Math.round(
+            (milestones ?? []).filter(m => m.status === "completed").length /
+            Math.max((milestones ?? []).length, 1) * 100
+          ),
+          investorPackage: Math.round(
+            (documents ?? []).filter(d => d.folder?.toLowerCase().includes("investor") && d.status === "approved").length /
+            Math.max((documents ?? []).filter(d => d.folder?.toLowerCase().includes("investor")).length, 1) * 100
+          ),
         }
       };
     },
@@ -384,7 +389,7 @@ export function useFolders() {
         supabase.from("documents").select("folder"),
         supabase.from("folder_access").select("folder")
       ]);
-      
+
       if (docsResp.error) throw docsResp.error;
       if (accessResp.error) throw accessResp.error;
 
@@ -421,7 +426,7 @@ export function useNotifications() {
         .order("created_at", { ascending: false })
         .limit(10);
       if (error) throw error;
-      
+
       const timeAgo = (dateStr: string) => {
         const diff = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / 60000);
         if (diff < 60) return `${diff}m ago`;
@@ -454,7 +459,7 @@ export function useGapAnalysis() {
         .select("*")
         .in("status", ["open", "gap"]);
       if (error) throw error;
-      
+
       return (data ?? []).map(c => ({
         item: c.requirement,
         severity: c.severity === "high" ? "High" : c.severity === "medium" ? "Medium" : "Low",
@@ -469,8 +474,8 @@ export type FinancialsData = {
   revenue: { year: string; value: number }[];
   ebitda: { year: string; value: number }[];
   ratios: {
-    dscr: number; icr: number; ltv: number; currentRatio: number; quickRatio: number;
-    debtEquity: number; assetCoverage: number; irr: number; npvUsdM: number;
+    dscr: number | null; icr: number | null; ltv: number | null; currentRatio: number | null; quickRatio: number | null;
+    debtEquity: number | null; assetCoverage: number | null; irr: number | null; npvUsdM: number | null;
   };
   scenarios: { name: string; revenue: number; ebitda: number; dscr: number }[];
 };
@@ -481,46 +486,56 @@ export function useFinancials() {
     queryFn: async (): Promise<FinancialsData> => {
       const { data, error } = await supabase.from("financial_metrics").select("*");
       if (error) throw error;
-      
+
       const metrics = data ?? [];
-      
+
+      // Helper: find a single scalar ratio metric (category = 'ratio' or no period)
+      const getVal = (metric: string): number | null => {
+        const row = metrics.find(
+          m => m.metric === metric && (m.category === "ratio" || (!m.category && !m.period))
+        );
+        return row?.value !== null && row?.value !== undefined ? Number(row.value) : null;
+      };
+
+      // Time-series rows (have a period, not a scenario)
       const revenue = metrics
-        .filter(m => m.metric === "revenue")
-        .sort((a, b) => (a.period ?? "").localeCompare(b.period ?? ""))
-        .map(m => ({ year: m.period ?? "", value: Number(m.value) }));
-        
-      const ebitda = metrics
-        .filter(m => m.metric === "ebitda")
+        .filter(m => m.metric === "revenue" && m.period && m.category !== "scenario")
         .sort((a, b) => (a.period ?? "").localeCompare(b.period ?? ""))
         .map(m => ({ year: m.period ?? "", value: Number(m.value) }));
 
-      const safeRevenue = revenue.length > 0 ? revenue : [
-        { year: "2022", value: 18.2 }, { year: "2023", value: 24.5 },
-        { year: "2024", value: 31.8 }, { year: "2025E", value: 42.4 },
-        { year: "2026F", value: 58.0 }, { year: "2027F", value: 71.5 },
-      ];
-      const safeEbitda = ebitda.length > 0 ? ebitda : [
-        { year: "2022", value: 3.1 }, { year: "2023", value: 5.2 },
-        { year: "2024", value: 8.4 }, { year: "2025E", value: 12.7 },
-        { year: "2026F", value: 19.2 }, { year: "2027F", value: 25.8 },
-      ];
+      const ebitda = metrics
+        .filter(m => m.metric === "ebitda" && m.period && m.category !== "scenario")
+        .sort((a, b) => (a.period ?? "").localeCompare(b.period ?? ""))
+        .map(m => ({ year: m.period ?? "", value: Number(m.value) }));
+
+      // Scenario rows: category = 'scenario', period = scenario name
+      const scenarioNames = [...new Set(
+        metrics.filter(m => m.category === "scenario").map(m => m.period ?? "")
+      )].filter(Boolean);
+
+      const scenarios = scenarioNames.map(name => ({
+        name,
+        revenue: Number(metrics.find(m => m.category === "scenario" && m.period === name && m.metric === "revenue")?.value ?? 0),
+        ebitda: Number(metrics.find(m => m.category === "scenario" && m.period === name && m.metric === "ebitda")?.value ?? 0),
+        dscr: Number(metrics.find(m => m.category === "scenario" && m.period === name && m.metric === "dscr")?.value ?? 0),
+      }));
 
       return {
-        revenue: safeRevenue,
-        ebitda: safeEbitda,
+        revenue,
+        ebitda,
         ratios: {
-          dscr: 1.62, icr: 3.8, ltv: 0.58, currentRatio: 1.9, quickRatio: 1.2,
-          debtEquity: 0.85, assetCoverage: 1.42, irr: 0.184, npvUsdM: 42.6,
+          dscr: getVal("dscr"),
+          icr: getVal("icr"),
+          ltv: getVal("ltv"),
+          currentRatio: getVal("current_ratio"),
+          quickRatio: getVal("quick_ratio"),
+          debtEquity: getVal("debt_equity"),
+          assetCoverage: getVal("asset_coverage"),
+          irr: getVal("irr"),
+          npvUsdM: getVal("npv"),
         },
-        scenarios: [
-          { name: "Base", revenue: 42.4, ebitda: 12.7, dscr: 1.62 },
-          { name: "Downside", revenue: 34.0, ebitda: 8.2, dscr: 1.18 },
-          { name: "Upside", revenue: 49.6, ebitda: 16.4, dscr: 2.05 },
-          { name: "Delayed Construction", revenue: 30.1, ebitda: 6.4, dscr: 0.98 },
-          { name: "FX Shock (-15%)", revenue: 36.1, ebitda: 9.5, dscr: 1.32 },
-        ]
+        scenarios,
       };
     }
   });
 }
-

@@ -99,8 +99,6 @@ function Dashboard() {
     investorPackage: 0,
   };
 
-  const key = process.env.LOVABLE_API_KEY;
-  console.log("key", key);
   return (
     <>
       <PageHeader

@@ -62,7 +62,7 @@ function dueMeta(due: string | null | undefined, status: string) {
 }
 
 function Tasks() {
-  const { data: TASKS = [] } = useTasks();
+  const { data: TASKS = [], isLoading } = useTasks();
   const { data: counts = {} } = useCommentCounts("task");
   const { roles, profile, user } = useAuth();
   const canWrite = roles.includes("admin") || roles.includes("advisor");
@@ -264,7 +264,14 @@ function Tasks() {
                     )}
                   </div>
                 ))}
-                {items.length === 0 && <div className="text-xs text-muted-foreground text-center py-4">No tasks</div>}
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading...
+                  </div>
+                ) : items.length === 0 ? (
+                  <div className="text-xs text-muted-foreground text-center py-4">No tasks</div>
+                ) : null}
               </div>
             </Card>
           );

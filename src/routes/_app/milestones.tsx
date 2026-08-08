@@ -25,7 +25,7 @@ const inputCls =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
 function Milestones() {
-  const { data: MILESTONES = [] } = useMilestones();
+  const { data: MILESTONES = [], isLoading } = useMilestones();
   const { data: counts = {} } = useCommentCounts("milestone");
   const { profile, roles } = useAuth();
   const ORGS = useOrgNames();
@@ -145,28 +145,45 @@ function Milestones() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {MILESTONES.map((m) => (
-              <tr key={m.uuid} className="hover:bg-secondary/40">
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{m.id}</td>
-                <td className="px-4 py-3 font-medium">{m.name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{m.owner}</td>
-                <td className="px-4 py-3 text-muted-foreground tabular-nums">{m.due}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1"><ProgressBar value={m.progress} tone={m.status === "overdue" ? "danger" : m.status === "in_progress" ? "gold" : "emerald"} /></div>
-                    <span className="text-xs w-10 text-right tabular-nums">{m.progress}%</span>
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="text-center py-10 text-muted-foreground text-sm">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading milestones...
                   </div>
                 </td>
-                <td className="px-4 py-3">
-                  <Pill tone={m.status === "completed" ? "success" : m.status === "overdue" ? "danger" : m.status === "in_progress" ? "warning" : "neutral"}>
-                    {m.status.replace("_", " ")}
-                  </Pill>
-                </td>
-                <td className="px-4 py-3">
-                  <CommentButton count={counts[m.uuid] ?? 0} onClick={() => setActive({ id: m.uuid, title: m.name })} />
+              </tr>
+            ) : MILESTONES.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center py-10 text-muted-foreground text-sm">
+                  No milestones found. Click "New milestone" to create one.
                 </td>
               </tr>
-            ))}
+            ) : (
+              MILESTONES.map((m) => (
+                <tr key={m.uuid} className="hover:bg-secondary/40">
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{m.id}</td>
+                  <td className="px-4 py-3 font-medium">{m.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{m.owner}</td>
+                  <td className="px-4 py-3 text-muted-foreground tabular-nums">{m.due}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1"><ProgressBar value={m.progress} tone={m.status === "overdue" ? "danger" : m.status === "in_progress" ? "gold" : "emerald"} /></div>
+                      <span className="text-xs w-10 text-right tabular-nums">{m.progress}%</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Pill tone={m.status === "completed" ? "success" : m.status === "overdue" ? "danger" : m.status === "in_progress" ? "warning" : "neutral"}>
+                      {m.status.replace("_", " ")}
+                    </Pill>
+                  </td>
+                  <td className="px-4 py-3">
+                    <CommentButton count={counts[m.uuid] ?? 0} onClick={() => setActive({ id: m.uuid, title: m.name })} />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </Card>

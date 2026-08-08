@@ -35,7 +35,7 @@ function cell(prob: string, impact: string, RISKS: RiskRow[]) {
 }
 
 function Risks() {
-  const { data: RISKS = [] } = useRisks();
+  const { data: RISKS = [], isLoading } = useRisks();
   const { profile, roles } = useAuth();
   const ORGS = useOrgNames();
   const createRisk = useCreateRisk();
@@ -163,16 +163,33 @@ function Risks() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {RISKS.map((r) => (
-              <tr key={r.id} className="hover:bg-secondary/40">
-                <td className="px-4 py-3 font-medium">{r.title}</td>
-                <td className="px-4 py-3 text-muted-foreground">{r.category}</td>
-                <td className="px-4 py-3 text-muted-foreground">{r.probability}</td>
-                <td className="px-4 py-3 text-muted-foreground">{r.impact}</td>
-                <td className="px-4 py-3"><Pill tone={r.rating === "High" ? "danger" : r.rating === "Medium" ? "warning" : "success"}>{r.rating}</Pill></td>
-                <td className="px-4 py-3 text-muted-foreground">{r.owner}</td>
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-muted-foreground text-sm">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading risks...
+                  </div>
+                </td>
               </tr>
-            ))}
+            ) : RISKS.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-muted-foreground text-sm">
+                  No risks found.
+                </td>
+              </tr>
+            ) : (
+              RISKS.map((r) => (
+                <tr key={r.id} className="hover:bg-secondary/40">
+                  <td className="px-4 py-3 font-medium">{r.title}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.category}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.probability}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.impact}</td>
+                  <td className="px-4 py-3"><Pill tone={r.rating === "High" ? "danger" : r.rating === "Medium" ? "warning" : "success"}>{r.rating}</Pill></td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.owner}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </Card>

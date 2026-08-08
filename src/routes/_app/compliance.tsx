@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/compliance")({
 const CATEGORIES = ["AAOIFI", "IFSB", "Sharia", "IFRS", "AML", "KYC", "Sanctions", "ESG", "Regulatory", "SPV"];
 
 function Compliance() {
-  const { data: COMPLIANCE = [] } = useCompliance();
+  const { data: COMPLIANCE = [], isLoading } = useCompliance();
   const complete = COMPLIANCE.filter((c) => c.status === "complete").length;
   const gaps = COMPLIANCE.filter((c) => c.status === "gap").length;
   const inprog = COMPLIANCE.filter((c) => c.status === "in_progress").length;
@@ -62,15 +62,32 @@ function Compliance() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {COMPLIANCE.map((c) => (
-              <tr key={c.id} className="hover:bg-secondary/40">
-                <td className="px-4 py-3 font-medium">{c.req}</td>
-                <td className="px-4 py-3 text-muted-foreground">{c.source}</td>
-                <td className="px-4 py-3 text-muted-foreground">{c.owner}</td>
-                <td className="px-4 py-3"><Pill tone={c.risk === "High" ? "danger" : c.risk === "Medium" ? "warning" : "success"}>{c.risk}</Pill></td>
-                <td className="px-4 py-3"><Pill tone={c.status === "complete" ? "success" : c.status === "gap" ? "danger" : "warning"}>{c.status.replace("_", " ")}</Pill></td>
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-muted-foreground text-sm">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading compliance data...
+                  </div>
+                </td>
               </tr>
-            ))}
+            ) : COMPLIANCE.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-muted-foreground text-sm">
+                  No compliance data found.
+                </td>
+              </tr>
+            ) : (
+              COMPLIANCE.map((c) => (
+                <tr key={c.id} className="hover:bg-secondary/40">
+                  <td className="px-4 py-3 font-medium">{c.req}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{c.source}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{c.owner}</td>
+                  <td className="px-4 py-3"><Pill tone={c.risk === "High" ? "danger" : c.risk === "Medium" ? "warning" : "success"}>{c.risk}</Pill></td>
+                  <td className="px-4 py-3"><Pill tone={c.status === "complete" ? "success" : c.status === "gap" ? "danger" : "warning"}>{c.status.replace("_", " ")}</Pill></td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </Card>

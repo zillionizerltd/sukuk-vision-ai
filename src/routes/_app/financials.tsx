@@ -119,15 +119,15 @@ function Financials() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-5">
-        <Metric label="DSCR" value={r.dscr.toFixed(2)} sub="Base case" />
-        <Metric label="ICR" value={r.icr.toFixed(2)} sub="Interest cover" />
-        <Metric label="LTV" value={`${Math.round(r.ltv * 100)}%`} sub="Loan / assets" />
-        <Metric label="IRR" value={`${(r.irr * 100).toFixed(1)}%`} sub="Project IRR" />
-        <Metric label="NPV" value={`$${r.npvUsdM}M`} sub="USD, base case" />
-        <Metric label="Debt / Equity" value={r.debtEquity.toFixed(2)} />
-        <Metric label="Asset coverage" value={r.assetCoverage.toFixed(2)} />
-        <Metric label="Current ratio" value={r.currentRatio.toFixed(2)} />
-        <Metric label="Quick ratio" value={r.quickRatio.toFixed(2)} />
+        <Metric label="DSCR" value={r.dscr != null ? r.dscr.toFixed(2) : "—"} sub="Base case" />
+        <Metric label="ICR" value={r.icr != null ? r.icr.toFixed(2) : "—"} sub="Interest cover" />
+        <Metric label="LTV" value={r.ltv != null ? `${Math.round(r.ltv * 100)}%` : "—"} sub="Loan / assets" />
+        <Metric label="IRR" value={r.irr != null ? `${(r.irr * 100).toFixed(1)}%` : "—"} sub="Project IRR" />
+        <Metric label="NPV" value={r.npvUsdM != null ? `$${r.npvUsdM}M` : "—"} sub="USD, base case" />
+        <Metric label="Debt / Equity" value={r.debtEquity != null ? r.debtEquity.toFixed(2) : "—"} />
+        <Metric label="Asset coverage" value={r.assetCoverage != null ? r.assetCoverage.toFixed(2) : "—"} />
+        <Metric label="Current ratio" value={r.currentRatio != null ? r.currentRatio.toFixed(2) : "—"} />
+        <Metric label="Quick ratio" value={r.quickRatio != null ? r.quickRatio.toFixed(2) : "—"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
