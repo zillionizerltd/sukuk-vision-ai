@@ -14,18 +14,18 @@ export const Route = createFileRoute("/_app")({
 // Maps each protected path prefix to the roles that may access it.
 // Paths not listed here are accessible to all authenticated users.
 const ROUTE_ROLES: Record<string, string[]> = {
-  "/dashboard":   ["admin", "advisor"],
+  "/dashboard": ["admin", "advisor", "auditor", "investor", "member"],
   "/structuring": ["admin", "advisor"],
-  "/compliance":  ["admin", "advisor", "auditor"],
-  "/risks":       ["admin", "advisor", "auditor"],
-  "/financials":  ["admin", "advisor", "auditor", "investor"],
-  "/reports":     ["admin", "advisor", "auditor", "investor"],
-  "/milestones":  ["admin", "advisor", "auditor", "investor", "member"],
-  "/tasks":       ["admin", "advisor", "auditor", "investor", "member"],
-  "/stakeholders":["admin", "advisor"],
+  "/compliance": ["admin", "advisor", "auditor"],
+  "/risks": ["admin", "advisor", "auditor"],
+  "/financials": ["admin", "advisor", "auditor", "investor"],
+  "/reports": ["admin", "advisor", "auditor", "investor"],
+  "/milestones": ["admin", "advisor", "auditor", "investor", "member"],
+  "/tasks": ["admin", "advisor", "auditor", "investor", "member"],
+  "/stakeholders": ["admin", "advisor"],
   "/audit-trail": ["admin", "auditor"],
-  "/settings":    ["admin"],
-  "/users":       ["admin"],
+  "/settings": ["admin"],
+  "/users": ["admin"],
 };
 
 function AppLayout() {
