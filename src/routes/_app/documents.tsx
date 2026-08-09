@@ -379,13 +379,33 @@ function Documents() {
           <div className="mt-1 space-y-0.5">
             {visibleFolders.map((f) => {
               const count = DOCUMENTS.filter((d) => d.folder === f).length;
+              const ownsFolder = (access ?? []).some((a) => a.folder === f && a.created_by && a.created_by === user?.id);
+              const canDelete = isAdmin || ownsFolder;
               return (
-                <button key={f} onClick={() => { setSelected(f); setUploadFolder(f); }}
-                        className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-secondary ${selected === f ? "bg-secondary font-medium" : ""}`}>
-                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="truncate flex-1">{f}</span>
-                  {count > 0 && <span className="text-[10px] text-muted-foreground">{count}</span>}
-                </button>
+                <div key={f} className={`group flex items-center gap-1 rounded-md pr-1 hover:bg-secondary ${selected === f ? "bg-secondary" : ""}`}>
+                  <button onClick={() => { setSelected(f); setUploadFolder(f); }}
+                          className={`flex-1 min-w-0 flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm ${selected === f ? "font-medium" : ""}`}>
+                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="truncate flex-1">{f}</span>
+                    {count > 0 && <span className="text-[10px] text-muted-foreground">{count}</span>}
+                  </button>
+                  {canDelete && (
+                    <button
+                      title={count > 0 ? "Folder must be empty to delete" : "Delete folder"}
+                      onClick={() => {
+                        if (count > 0) { setMsg(`"${f}" still contains ${count} document(s). Remove them first.`); return; }
+                        setMsg(null);
+                        deleteFolder.mutate(f, {
+                          onSuccess: () => { if (selected === f) setSelected(null); setMsg(`Folder "${f}" deleted`); },
+                          onError: (e: any) => setMsg(e?.message ?? "Could not delete folder"),
+                        });
+                      }}
+                      className="shrink-0 rounded p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
