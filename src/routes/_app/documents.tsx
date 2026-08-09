@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Card, PageHeader, Pill, Button } from "@/components/ui/primitives";
 import { useDocuments, useFolders } from "@/hooks/use-modules";
-import { useFolderAccess, allowedFolders, useToggleFolderAccess } from "@/hooks/use-folder-access";
+import { useFolderAccess, allowedFolders, useToggleFolderAccess, useDeleteFolder } from "@/hooks/use-folder-access";
 import { useOrganisations } from "@/hooks/use-organisations";
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
@@ -54,6 +54,7 @@ function Documents() {
   const canWrite = (profile?.org ?? "").toLowerCase() === "agrofeed global";
   const visibleFolders = allowedFolders(access, profile?.org, FOLDERS);
   const toggleAccess = useToggleFolderAccess();
+  const deleteFolder = useDeleteFolder();
 
   const createFolderMut = useMutation({
     mutationFn: async ({ folder, accessOrgs }: { folder: string, accessOrgs: string[] }) => {
