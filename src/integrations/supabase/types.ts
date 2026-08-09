@@ -173,6 +173,7 @@ export type Database = {
       folder_access: {
         Row: {
           created_at: string
+          created_by: string | null
           folder: string
           id: string
           org: string
@@ -180,6 +181,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           folder: string
           id?: string
           org: string
@@ -187,6 +189,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           folder?: string
           id?: string
           org?: string
