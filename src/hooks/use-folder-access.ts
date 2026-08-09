@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type FolderAccessRow = { id: string; org: string; folder: string };
+export type FolderAccessRow = { id: string; org: string; folder: string; created_by: string | null };
 
 export function useFolderAccess() {
   return useQuery({
@@ -9,7 +9,7 @@ export function useFolderAccess() {
     queryFn: async (): Promise<FolderAccessRow[]> => {
       const { data, error } = await supabase
         .from("folder_access")
-        .select("id, org, folder")
+        .select("id, org, folder, created_by")
         .order("org");
       if (error) throw error;
       return data ?? [];
@@ -51,4 +51,20 @@ export function allowedFolders(
   if (o === "agrofeed global") return [...allFolders];
   const mine = (rows ?? []).filter((r) => r.org.toLowerCase() === o).map((r) => r.folder);
   return mine.length === 0 ? [...allFolders] : mine;
+}
+
+/** Delete a folder (all its access rows). Admins or the folder creator only. */
+export function useDeleteFolder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (folder: string) => {
+      const { error } = await supabase.from("folder_access").delete().eq("folder", folder);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folder-access"] });
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["documents"] });
+    },
+  });
 }
