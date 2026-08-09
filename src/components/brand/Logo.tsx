@@ -33,11 +33,11 @@ export function SukukDataRoomLogo({ inverted = false }: { inverted?: boolean }) 
       <div className="min-w-0 border-l border-gold/40 pl-3 leading-none sm:pl-4">
 
         <div
-          className={`truncate text-lg font-semibold tracking-tight sm:text-[22px] ${inverted ? "text-white" : "text-navy"}`}
+          className={`truncate text-lg font-extrabold tracking-tight sm:text-[36px] ${inverted ? "text-white" : "text-navy"}`}
         >
           SUKUK
         </div>
-        <div className="truncate text-[10px] font-medium uppercase tracking-[0.18em] text-gold sm:text-[11px] sm:tracking-[0.2em]">
+        <div className="truncate text-[12px] font-bold uppercase tracking-[0.18em] text-gold sm:text-[13px] sm:tracking-[0.2em]">
           Data Room
         </div>
       </div>

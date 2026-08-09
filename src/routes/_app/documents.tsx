@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/hooks/use-auth";
 import { DocumentPreviewModal, type PreviewDoc } from "@/components/documents/DocumentPreviewModal";
-import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye, FolderPlus, Settings } from "lucide-react";
+import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye, FolderPlus, Settings, Edit2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -45,6 +45,9 @@ function Documents() {
   const [newFolderName, setNewFolderName] = useState("");
   const [newFolderAccess, setNewFolderAccess] = useState<string[]>([]);
   const [accessModalFolder, setAccessModalFolder] = useState<string | null>(null);
+  
+  const [editingFolder, setEditingFolder] = useState<string | null>(null);
+  const [editFolderName, setEditFolderName] = useState("");
 
   const { data: DOCUMENTS = [] } = useDocuments();
   const { user, profile, isAdmin } = useAuth();
@@ -56,11 +59,16 @@ function Documents() {
   const toggleAccess = useToggleFolderAccess();
   const deleteFolder = useDeleteFolder();
 
+  const canManageFolder = (folderName: string) => {
+    if (isAdmin) return true;
+    return access?.some(a => a.folder === folderName && a.created_by === user?.id) ?? false;
+  };
+
   const createFolderMut = useMutation({
     mutationFn: async ({ folder, accessOrgs }: { folder: string, accessOrgs: string[] }) => {
       const allOrgs = new Set(["Agrofeed Global", ...accessOrgs]);
       if (profile?.org) allOrgs.add(profile.org);
-      const inserts = Array.from(allOrgs).map(org => ({ org, folder }));
+      const inserts = Array.from(allOrgs).map(org => ({ org, folder, created_by: user?.id }));
       const { error } = await supabase.from("folder_access").insert(inserts);
       if (error) throw error;
     },
@@ -72,6 +80,72 @@ function Documents() {
       setMsg("Folder created successfully");
     }
   });
+
+  const deleteFolderMut = useMutation({
+    mutationFn: async (folder: string) => {
+      // Find all documents in this folder
+      const { data: docs, error: countErr } = await supabase
+        .from("documents")
+        .select("id, storage_path")
+        .eq("folder", folder);
+        
+      if (countErr) throw countErr;
+      
+      if (docs && docs.length > 0) {
+        // Remove files from storage
+        const paths = docs.map(d => d.storage_path).filter(Boolean) as string[];
+        if (paths.length > 0) {
+          await supabase.storage.from("documents").remove(paths);
+        }
+        // Delete documents from database
+        const ids = docs.map(d => d.id);
+        const { error: delDocsErr } = await supabase.from("documents").delete().in("id", ids);
+        if (delDocsErr) throw delDocsErr;
+      }
+
+      // Finally, delete the folder access records
+      const { error } = await supabase.from("folder_access").delete().eq("folder", folder);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["documents"] });
+      setSelected(null);
+      setMsg("Folder and all its contents deleted successfully");
+    },
+    onError: (err: Error) => {
+      setMsg(err.message);
+    }
+  });
+
+  const renameFolderMut = useMutation({
+    mutationFn: async ({ oldName, newName }: { oldName: string; newName: string }) => {
+      if (!newName || newName === oldName) return;
+      
+      const { error: accessErr } = await supabase
+        .from("folder_access")
+        .update({ folder: newName })
+        .eq("folder", oldName);
+      if (accessErr) throw accessErr;
+
+      const { error: docsErr } = await supabase
+        .from("documents")
+        .update({ folder: newName })
+        .eq("folder", oldName);
+      if (docsErr) throw docsErr;
+    },
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ["folders"] });
+      qc.invalidateQueries({ queryKey: ["documents"] });
+      setEditingFolder(null);
+      if (selected === variables.oldName) setSelected(variables.newName);
+      setMsg(`Folder renamed to ${variables.newName}`);
+    },
+    onError: (err: Error) => {
+      setMsg(err.message);
+    }
+  });
+
 
   const handleCreateFolder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -282,7 +356,7 @@ function Documents() {
           className={`mb-3 text-xs rounded-md px-3 py-2 whitespace-pre-wrap break-words ${
             msg === "Upload complete"
               ? "bg-secondary"
-              : "bg-destructive/10 text-destructive border border-destructive/30"
+            : "bg-secondary text-primary border border-primary/30"
           }`}
         >
           {msg}
@@ -420,10 +494,26 @@ function Documents() {
                   <FolderOpen className="h-4 w-4 text-gold" />
                   {selected}
                 </h2>
-                {canWrite && (
-                  <Button variant="secondary" size="sm" className="h-7 text-[11px] px-2 gap-1.5" onClick={() => setAccessModalFolder(selected)}>
-                    <Settings className="h-3.5 w-3.5" /> Manage Access
-                  </Button>
+                {canManageFolder(selected) && (
+                  <div className="flex gap-2">
+                    <Button variant="secondary" size="sm" className="h-7 text-[11px] px-2 gap-1.5" onClick={() => setAccessModalFolder(selected)}>
+                      <Settings className="h-3.5 w-3.5" /> Manage Access
+                    </Button>
+                    <Button variant="secondary" size="sm" className="h-7 text-[11px] px-2 gap-1.5" onClick={() => {
+                      setEditFolderName(selected);
+                      setEditingFolder(selected);
+                    }}>
+                      <Edit2 className="h-3.5 w-3.5" /> Rename
+                    </Button>
+                    <Button variant="secondary" size="sm" className="h-7 text-[11px] px-2 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive border border-destructive/20 hover:border-destructive/30" onClick={() => {
+                        if (confirm(`Are you sure you want to delete the folder "${selected}" and ALL its documents? This cannot be undone.`)) {
+                           deleteFolderMut.mutate(selected);
+                        }
+                    }} disabled={deleteFolderMut.isPending}>
+                      <Trash2 className="h-3.5 w-3.5" /> 
+                      {deleteFolderMut.isPending && deleteFolderMut.variables === selected ? "Deleting..." : "Delete Folder"}
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
@@ -584,6 +674,38 @@ function Documents() {
               })}
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!editingFolder} onOpenChange={(open) => !open && setEditingFolder(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename Folder</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium mb-1 block">Folder Name</label>
+            <Input 
+              value={editFolderName} 
+              onChange={(e) => setEditFolderName(e.target.value)} 
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && editingFolder && editFolderName.trim()) {
+                  e.preventDefault();
+                  renameFolderMut.mutate({ oldName: editingFolder, newName: editFolderName.trim() });
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setEditingFolder(null)}>Cancel</Button>
+            <Button 
+              onClick={() => {
+                if (editingFolder) renameFolderMut.mutate({ oldName: editingFolder, newName: editFolderName.trim() });
+              }} 
+              disabled={renameFolderMut.isPending || !editFolderName.trim() || editFolderName.trim() === editingFolder}
+            >
+              {renameFolderMut.isPending ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

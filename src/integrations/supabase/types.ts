@@ -189,11 +189,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by?: string | null
           folder?: string
           id?: string
           org?: string
           updated_at?: string
+          created_by?: string | null
         }
         Relationships: []
       }

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type FolderAccessRow = { id: string; org: string; folder: string; created_by: string | null };
+export type FolderAccessRow = { id: string; org: string; folder: string; created_by?: string | null };
 
 export function useFolderAccess() {
   return useQuery({

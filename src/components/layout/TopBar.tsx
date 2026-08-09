@@ -5,6 +5,7 @@ import { useAuth, signOut } from "@/hooks/use-auth";
 import { logAudit } from "@/lib/audit";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAdvisor } from "@/components/advisor/AdvisorProvider";
+import { MobileSidebar } from "@/components/layout/Sidebar";
 
 
 function initials(name: string | null | undefined, email: string | null | undefined) {
@@ -43,6 +44,7 @@ export function TopBar() {
   return (
     <header className="h-16 shrink-0 border-b bg-background/80 backdrop-blur sticky top-0 z-30">
       <div className="h-full flex items-center gap-4 px-4 lg:px-8">
+        <MobileSidebar />
         <div className="hidden md:flex items-center gap-2 rounded-lg border border-input bg-secondary/50 px-3 py-1.5 text-sm">
           <span className="font-semibold text-primary">Agrofeed Sukuk 2026</span>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -79,10 +81,11 @@ export function TopBar() {
               if (text) setQuery("");
               advisor.open(text || undefined);
             }}
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg gradient-emerald px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-95 transition"
+            className="inline-flex items-center gap-1.5 rounded-lg gradient-emerald px-2 sm:px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-95 transition"
+            title="AI Advisor"
           >
             <Sparkles className="h-4 w-4" />
-            AI Advisor
+            <span className="hidden sm:inline">AI Advisor</span>
           </button>
 
           <NotificationBell />
