@@ -9,11 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/hooks/use-auth";
 import { DocumentPreviewModal, type PreviewDoc } from "@/components/documents/DocumentPreviewModal";
-import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye, FolderPlus, Settings, Edit2 } from "lucide-react";
+import { FolderOpen, Upload, Search, Sparkles, File, Filter, Download, Trash2, Loader2, Eye, FolderPlus, Settings, Edit2, Tag, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({ meta: [{ title: "Data Room · Documents · Agrofeed Sukuk" }, { name: "description", content: "Secure document repository with AI analysis." }] }),
@@ -50,14 +50,27 @@ function Documents() {
   const [editFolderName, setEditFolderName] = useState("");
 
   const { data: DOCUMENTS = [] } = useDocuments();
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin, roles } = useAuth();
   const { data: access } = useFolderAccess();
   const { data: orgs = [] } = useOrganisations();
   const qc = useQueryClient();
-  const canWrite = (profile?.org ?? "").toLowerCase() === "agrofeed global";
+  const canWrite = (profile?.org ?? "").toLowerCase() === "agrofeed global" || roles.some((r) => ["admin", "advisor", "investor"].includes(r));
   const visibleFolders = allowedFolders(access, profile?.org, FOLDERS);
   const toggleAccess = useToggleFolderAccess();
   const deleteFolder = useDeleteFolder();
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase.from("documents").update({ status }).eq("id", id);
+      if (error) throw error;
+      return { id, status };
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["documents"] });
+      void logAudit("Changed document status", { target: data.id, targetType: "documents", details: { new_status: data.status } });
+    },
+    onError: (e) => setMsg(`Could not update status: ${e.message}`),
+  });
 
   const canManageFolder = (folderName: string) => {
     if (isAdmin) return true;
@@ -556,10 +569,32 @@ function Documents() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{d.folder}</td>
-                    <td className="px-4 py-3">
-                      <Pill tone={d.status === "approved" ? "success" : d.status === "in_review" ? "warning" : d.status === "expired" ? "danger" : "info"}>
-                        {d.status.replace("_", " ")}
-                      </Pill>
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      {canWrite ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="focus:outline-none hover:opacity-80 transition-opacity">
+                            <Pill tone={d.status === "approved" ? "success" : d.status === "in_review" ? "warning" : d.status === "expired" ? "danger" : "info"}>
+                              {d.status.replace("_", " ")}
+                              <ChevronDown className="ml-1 h-3 w-3 opacity-70" />
+                            </Pill>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            {["draft", "in_review", "approved", "expired", "archived"].map((st) => (
+                              <DropdownMenuItem
+                                key={st}
+                                onClick={() => updateStatus.mutate({ id: d.id, status: st })}
+                                className={d.status === st ? "bg-secondary font-medium" : ""}
+                              >
+                                <span className="capitalize">{st.replace("_", " ")}</span>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <Pill tone={d.status === "approved" ? "success" : d.status === "in_review" ? "warning" : d.status === "expired" ? "danger" : "info"}>
+                          {d.status.replace("_", " ")}
+                        </Pill>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs tabular-nums">{d.updated}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -572,9 +607,29 @@ function Documents() {
                           <Download className="h-3.5 w-3.5" />
                         </button>
                         {canWrite && (
-                          <button onClick={() => remove(d.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-destructive hover:bg-destructive/10" title="Delete">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          <>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-secondary focus:outline-none" title="Change Status">
+                                <Tag className="h-3.5 w-3.5" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {["draft", "in_review", "approved", "expired", "archived"].map((st) => (
+                                  <DropdownMenuItem
+                                    key={st}
+                                    onClick={() => updateStatus.mutate({ id: d.id, status: st })}
+                                    className={d.status === st ? "bg-secondary font-medium" : ""}
+                                  >
+                                    <span className="capitalize">{st.replace("_", " ")}</span>
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <button onClick={() => remove(d.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-destructive hover:bg-destructive/10" title="Delete">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -589,7 +644,17 @@ function Documents() {
         </div>
       </div>
 
-      {previewDoc && <DocumentPreviewModal doc={previewDoc} onClose={() => setPreviewDoc(null)} />}
+      {previewDoc && (
+        <DocumentPreviewModal
+          doc={previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          canWrite={canWrite}
+          onStatusChange={(id, status) => {
+            updateStatus.mutate({ id, status });
+            setPreviewDoc({ ...previewDoc, status });
+          }}
+        />
+      )}
 
       {/* New Folder Modal */}
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>

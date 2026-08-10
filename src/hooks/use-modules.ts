@@ -314,16 +314,17 @@ export function useDashboardMetrics() {
       ] = await Promise.all([
         supabase.from("documents").select("status, folder"),
         supabase.from("milestones").select("status, due_date, progress, phase"),
-        supabase.from("compliance_items").select("status"),
+        supabase.from("compliance_items").select("status, severity"),
         supabase.from("risks").select("impact, likelihood"),
         supabase.from("stakeholders").select("pending, completed, users_count"),
         supabase.from("sukuk_structures").select("size_musd, tenor_years, status, name")
       ]);
 
       const now = new Date();
-      const overdueMilestones = (milestones ?? []).filter(
+      const overdueList = (milestones ?? []).filter(
         (m) => m.status !== "completed" && m.due_date && new Date(m.due_date) < now
-      ).length;
+      );
+      const overdueMilestones = overdueList.length;
 
       const highRisk = (risks ?? []).filter((r) => {
         const s = (r.likelihood ?? 3) * (r.impact ?? 3);
@@ -333,7 +334,18 @@ export function useDashboardMetrics() {
       const totalDocuments = documents?.length ?? 0;
       const approvedDocs = (documents ?? []).filter(d => d.status === "approved").length;
       const pendingReviewDocs = (documents ?? []).filter(d => d.status === "in_review" || d.status === "pending").length;
-      const activeUsers = (stakeholders ?? []).reduce((acc, s) => acc + (s.users_count ?? 0), 0) || 1;
+      const activeUsers = (stakeholders ?? []).reduce((acc, s) => acc + (s.users_count ?? 0), 0) || 0;
+
+      // Compliance breakdown by severity (only open items)
+      const openCompliance = (compliance ?? []).filter(c => c.status !== "completed");
+      const highComplianceCount = openCompliance.filter(c => c.severity === "high").length;
+      const medComplianceCount = openCompliance.filter(c => c.severity === "medium").length;
+
+      // Organisation count from stakeholders
+      const organisationCount = (stakeholders ?? []).length;
+
+      // Structure status
+      const structureStatus = structures?.[0]?.status ?? null;
 
       // Readiness Breakdown calculation:
       const categories = [
@@ -346,13 +358,15 @@ export function useDashboardMetrics() {
         let val = 0;
         if (catDocs.length > 0) {
           val = Math.round((catDocs.filter(d => d.status === "approved").length / catDocs.length) * 100);
-        } else {
-          val = 0 + (key.length * 5) % 5 // pseudo-random fallback for empty categories
         }
         return { key, value: val };
       });
 
-      const overallReadiness = Math.round(breakdown.reduce((acc, curr) => acc + curr.value, 0) / categories.length);
+      const nonZeroBreakdown = breakdown.filter(b => b.value > 0);
+      const overallReadiness = nonZeroBreakdown.length > 0
+        ? Math.round(nonZeroBreakdown.reduce((acc, curr) => acc + curr.value, 0) / nonZeroBreakdown.length)
+        : 0;
+
       return {
         readiness: {
           overall: overallReadiness,
@@ -364,12 +378,12 @@ export function useDashboardMetrics() {
           approved: approvedDocs,
           missing: 0,
           overdueMilestones,
-          openCompliance: (compliance ?? []).filter(c => c.status !== "completed").length,
+          openCompliance: openCompliance.length,
           highRisk,
           pendingApprovals: pendingReviewDocs,
           activeUsers,
           estimatedSizeUsdM: structures?.[0]?.size_musd ?? 0,
-          expectedIssuance: structures?.[0]?.tenor_years ? `${structures[0].tenor_years}yr tenor` : "—",
+          expectedIssuance: structures?.[0]?.tenor_years ? `${structures[0].tenor_years}yr tenor` : null,
           overallCompletion: Math.round(
             (milestones ?? []).filter(m => m.status === "completed").length /
             Math.max((milestones ?? []).length, 1) * 100
@@ -378,6 +392,12 @@ export function useDashboardMetrics() {
             (documents ?? []).filter(d => d.folder?.toLowerCase().includes("investor") && d.status === "approved").length /
             Math.max((documents ?? []).filter(d => d.folder?.toLowerCase().includes("investor")).length, 1) * 100
           ),
+          // New dynamic fields for sub-labels
+          highComplianceCount,
+          medComplianceCount,
+          organisationCount,
+          structureStatus,
+          needAttentionCount: overdueMilestones,
         }
       };
     },

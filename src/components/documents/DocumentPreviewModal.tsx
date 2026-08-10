@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/hooks/use-auth";
 import { useAddComment, useComments, useDeleteComment, type CommentRow } from "@/hooks/use-comments";
-import { Download, Loader2, MessageSquare, Reply, Trash2, X, ExternalLink } from "lucide-react";
+import { Download, Loader2, MessageSquare, Reply, Trash2, X, ExternalLink, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { PdfCanvasViewer } from "./PdfCanvasViewer";
 import { DocxViewer } from "./DocxViewer";
 import { SheetViewer } from "./SheetViewer";
@@ -20,7 +21,17 @@ export type PreviewDoc = {
   updated: string;
 };
 
-export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClose: () => void }) {
+export function DocumentPreviewModal({
+  doc,
+  onClose,
+  canWrite,
+  onStatusChange,
+}: {
+  doc: PreviewDoc;
+  onClose: () => void;
+  canWrite?: boolean;
+  onStatusChange?: (id: string, status: string) => void;
+}) {
   const { user, profile } = useAuth();
   const [url, setUrl] = useState<string | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -200,9 +211,33 @@ export function DocumentPreviewModal({ doc, onClose }: { doc: PreviewDoc; onClos
               <span>{doc.confidentiality} confidentiality</span>
               <span>·</span>
               <span className="tabular-nums">{doc.updated}</span>
-              <Pill tone={doc.status === "approved" ? "success" : doc.status === "in_review" ? "warning" : "info"}>
-                {doc.status.replace("_", " ")}
-              </Pill>
+              {canWrite && onStatusChange ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="focus:outline-none hover:opacity-80 transition-opacity">
+                    <Pill tone={doc.status === "approved" ? "success" : doc.status === "in_review" ? "warning" : doc.status === "expired" ? "danger" : "info"}>
+                      {doc.status.replace("_", " ")}
+                      <ChevronDown className="ml-1 h-3 w-3 opacity-70" />
+                    </Pill>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {["draft", "in_review", "approved", "expired", "archived"].map((st) => (
+                      <DropdownMenuItem
+                        key={st}
+                        onClick={() => onStatusChange(doc.id, st)}
+                        className={doc.status === st ? "bg-secondary font-medium" : ""}
+                      >
+                        <span className="capitalize">{st.replace("_", " ")}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Pill tone={doc.status === "approved" ? "success" : doc.status === "in_review" ? "warning" : doc.status === "expired" ? "danger" : "info"}>
+                  {doc.status.replace("_", " ")}
+                </Pill>
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
